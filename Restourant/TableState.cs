@@ -1,0 +1,1 @@
+﻿public enum TableState{Free,Booked}
