@@ -39,4 +39,37 @@
                 : "Готово! Ваш столик номер " + table.Id);
         });
     }
+    
+    public void FreeTable(int id)
+    {
+        Console.WriteLine("Добрый день! Подождите секунду я освобожу столик, оставайтесь на линии");
+
+        var table = _tables.FirstOrDefault(t => t.Id == id);
+        
+        Thread.Sleep(1000*5);
+
+        table?.Set(TableState.Free);
+
+        Console.WriteLine(table is null
+            ? "Такого столика нет в нашем ресторане"
+            : "Готово! Мы отменили вашу бронь");
+    }
+
+    public void FreeTableAsync(int id)
+    {
+        Console.WriteLine("Добрый день! Подождите секунду я подберу столик и подтвержу вашу бронь, вам придёт уведомление");
+
+        Task.Run(async () =>
+        {
+            var table = _tables.FirstOrDefault(t => t.Id == id && t.State == TableState.Booked);
+
+            await Task.Delay(1000 * 5);
+            
+            table?.Set(TableState.Free);
+
+            Console.WriteLine("УВЕДОМЛЕНИЕ: " + table is null
+                ? "Такого столика нет в нашем ресторане"
+                : "Готово! Мы отменили вашу бронь");
+        });
+    }
 }
