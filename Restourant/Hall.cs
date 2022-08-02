@@ -1,6 +1,7 @@
 ﻿public class Hall
 {
     private readonly List<Table> _tables = new();
+    private readonly Notifier _notifier = new() { SendDelay = 300 };
 
     public Hall()
     {
@@ -34,7 +35,7 @@
             await Task.Delay(1000 * 5);
             table?.Set(TableState.Booked);
 
-            Console.WriteLine("УВЕДОМЛЕНИЕ: " + table is null
+            await _notifier.Send(table is null
                 ? "К сожалению, сейчас все столики заняты"
                 : "Готово! Ваш столик номер " + table.Id);
         });
@@ -67,7 +68,7 @@
             
             table?.Set(TableState.Free);
 
-            Console.WriteLine("УВЕДОМЛЕНИЕ: " + table is null
+            await _notifier.Send(table is null
                 ? "Такого столика нет в нашем ресторане"
                 : "Готово! Мы отменили вашу бронь");
         });
