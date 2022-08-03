@@ -1,13 +1,31 @@
-﻿public class Hall
+﻿public class Hall : IDisposable
 {
     private readonly List<Table> _tables = new();
     private readonly Notifier _notifier = new() { SendDelay = 300 };
-
+    private readonly PeriodicTimer _timer = new (TimeSpan.FromSeconds(20));
+    private readonly CancellationTokenSource _freeTablesCancellationSource = new();
+    
     public Hall()
     {
         for (byte i = 0; i < 10; i++)
         {
             _tables.Add(new Table(i));
+        }
+
+        FreeTables(_freeTablesCancellationSource.Token);
+    }
+
+    private async Task FreeTables(CancellationToken token)
+    {
+        while (await _timer.WaitForNextTickAsync(token))
+        {
+            if(token.IsCancellationRequested) return;
+            
+            var bookedTables = _tables.Where(t => t.State == TableState.Booked).Select(t => t.Id).ToArray();
+            if(bookedTables.Length == 0) continue;
+
+            foreach (var tableId in bookedTables)
+                FreeTableAsync(tableId);
         }
     }
 
@@ -72,5 +90,12 @@
                 ? "Такого столика нет в нашем ресторане"
                 : "Готово! Мы отменили вашу бронь");
         });
+    }
+
+    public void Dispose()
+    {
+        _freeTablesCancellationSource.Cancel();
+        _timer.Dispose();
+        _freeTablesCancellationSource.Dispose();
     }
 }

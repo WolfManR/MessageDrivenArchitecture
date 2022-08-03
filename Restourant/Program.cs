@@ -2,7 +2,7 @@
 using System.Text;
 
 Console.OutputEncoding = Encoding.UTF8;
-var rest = new Hall();
+using var rest = new Hall();
 while (true)
 {
     Console.WriteLine("Привет! Желаете забронировать или освободить столик?\n" +
