@@ -1,31 +1,34 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
 using Messaging;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-const string notificationQueue = "restaurant_notifications";
+const string notificationExchange = "restaurant_notifications";
+string queueName;
 
 using var provider = NotifyProvider.Create(new MessagingConfiguration());
 
-var channel = provider.ConfigureChannel(notificationQueue);
-channel.QueueDeclare(
-    queue: notificationQueue,
-    durable: true,
-    exclusive: false,
-    autoDelete: false,
-    arguments: null);
-channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
+// configure exchange channel for notifications
+var channel = provider.ConfigureChannel(notificationExchange);
+channel.ExchangeDeclare(exchange: notificationExchange, type: ExchangeType.Fanout);
+queueName  = channel.QueueDeclare().QueueName;
+channel.QueueBind(
+    queue: queueName,
+    exchange: notificationExchange,
+    routingKey: string.Empty);
 
+// start consuming notifications from channel
 var consumer = new EventingBasicConsumer(channel);
 consumer.Received += HandleNotification;
+provider.StartReceiving(notificationExchange, queueName, true, consumer);
 
-provider.StartReceiving(notificationQueue, false, consumer);
-
+// print notifications in console with delay in 300 milliseconds
 Console.WriteLine(" [*] Ожидаем уведомлений из ресторана. Нажмите любую кнопку чтобы завершить работу...");
 while (!Console.KeyAvailable)
 {
     await Task.Delay(300);
-    if(!NotifyQueue.HasNotifications) continue;
+    if(NotifyQueue.IsEmpty) continue;
 
     foreach (var notification in NotifyQueue.GetNotifications())
         Console.WriteLine(notification);
@@ -33,29 +36,24 @@ while (!Console.KeyAvailable)
 
 static void HandleNotification(object? sender, BasicDeliverEventArgs e)
 {
-    if (sender is not EventingBasicConsumer { Model: { } channel })
-        throw new InvalidOperationException("This must never be thrown");
-
     var message = Encoding.UTF8.GetString(e.Body.Span);
     NotifyQueue.AddMessage("Уведомление: " + message);
-
-    channel.BasicAck(deliveryTag: e.DeliveryTag, multiple: false);
 }
 
 static class NotifyQueue
 {
-    private static ConcurrentQueue<string> _notifications = new();
+    private static readonly ConcurrentQueue<string> Notifications = new();
 
-    public static bool HasNotifications => _notifications.Count > 0;
+    public static bool IsEmpty => Notifications.IsEmpty;
 
     public static void AddMessage(string message)
     {
-        _notifications.Enqueue(message);
+        Notifications.Enqueue(message);
     }
 
     public static IEnumerable<string> GetNotifications()
     {
-        while (_notifications.TryDequeue(out var notification))
+        while (Notifications.TryDequeue(out var notification))
         {
             yield return notification;
         }

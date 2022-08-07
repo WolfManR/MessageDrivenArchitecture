@@ -9,8 +9,7 @@ public class Hall : IDisposable
     private readonly AutoResetEvent _event = new(true);
     
     private readonly NotifyProvider _notifyProvider;
-    private readonly IBasicProperties _notifyProperties;
-    private const string NotificationQueue = "restaurant_notifications";
+    private const string NotificationExchange = "restaurant_notifications";
     
     public Hall()
     {
@@ -21,14 +20,9 @@ public class Hall : IDisposable
 
         var provider = _notifyProvider = NotifyProvider.Create(new MessagingConfiguration());
         
-        var channel = provider.ConfigureChannel(NotificationQueue);
-        channel.QueueDeclare(queue: NotificationQueue,
-            durable: true,
-            exclusive: false,
-            autoDelete: false,
-            arguments: null);
-        var messageProperties = _notifyProperties = channel.CreateBasicProperties();
-        messageProperties.Persistent = true;
+        provider
+            .ConfigureChannel(NotificationExchange)
+            .ExchangeDeclare(exchange: NotificationExchange, type: ExchangeType.Fanout);
         
         FreeTables(_freeTablesCancellationSource.Token);
     }
@@ -76,11 +70,12 @@ public class Hall : IDisposable
             table?.Set(TableState.Booked);
 
             _notifyProvider.Send(
-                NotificationQueue,
+                NotificationExchange,
+                string.Empty,
                 table is null
                     ? "К сожалению, сейчас все столики заняты"
                     : "Готово! Ваш столик номер " + table.Id, 
-                properties:_notifyProperties);
+                NotificationExchange);
             _event.Set();
         });
     }
@@ -115,11 +110,12 @@ public class Hall : IDisposable
             table?.Set(TableState.Free);
 
             _notifyProvider.Send(
-                NotificationQueue,
+                NotificationExchange,
+                string.Empty,
                 table is null
                     ? "Такого столика нет в нашем ресторане"
                     : "Готово! Мы отменили вашу бронь", 
-                properties:_notifyProperties);
+                NotificationExchange);
             _event.Set();
         });
     }
