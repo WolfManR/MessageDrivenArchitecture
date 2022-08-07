@@ -29,7 +29,7 @@ internal class HelloWorld
     {
         var consumer = new EventingBasicConsumer(_channel);
         consumer.Received += HandleMessage;
-        _provider.StartReceiving(Queue, true, consumer);
+        _provider.StartReceiving(Queue, Queue, true, consumer);
     }
 
     private void HandleMessage(object? _, BasicDeliverEventArgs e)

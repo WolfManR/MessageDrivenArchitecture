@@ -32,7 +32,7 @@ internal class Receiver
     {
         var consumer = new EventingBasicConsumer(_channel);
         consumer.Received += HandleMessage;
-        _provider.StartReceiving(_queue, true, consumer);
+        _provider.StartReceiving(Exchange, _queue, true, consumer);
     }
 
     private void HandleMessage(object? model, BasicDeliverEventArgs e)

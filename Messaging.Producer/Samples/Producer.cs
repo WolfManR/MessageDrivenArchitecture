@@ -23,7 +23,7 @@ internal class Producer
         while (!Console.KeyAvailable)
         {
             Thread.Sleep(1000);
-            _provider.Send(string.Empty, message, Exchange);
+            _provider.Send(Exchange, string.Empty, message, Exchange);
             Console.WriteLine(" [x] Sent {0}", message);
         }
     }

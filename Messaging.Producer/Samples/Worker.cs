@@ -33,7 +33,7 @@ internal class Worker
         while (!Console.KeyAvailable)
         {
             Thread.Sleep(1000);
-            _provider.Send(Queue, message, properties: _messageProperties);
+            _provider.Send(Queue, Queue, message, properties: _messageProperties);
             Console.WriteLine(" [x] Sent {0}", message);
         }
     }

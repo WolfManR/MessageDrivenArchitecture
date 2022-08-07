@@ -30,7 +30,7 @@ internal class Worker
     {
         var consumer = new EventingBasicConsumer(_channel);
         consumer.Received += HandleMessage;
-        _provider.StartReceiving(Queue, false, consumer);
+        _provider.StartReceiving(Queue, Queue, false, consumer);
     }
 
     private void HandleMessage(object? sender, BasicDeliverEventArgs e)

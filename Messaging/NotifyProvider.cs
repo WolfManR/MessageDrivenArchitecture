@@ -23,22 +23,27 @@ public class NotifyProvider : IDisposable
             UserName = configuration.Username,
             Password = configuration.Password
         };
-        return new NotifyProvider(factory.CreateConnection());
+        return new(factory.CreateConnection());
     }
 
-    public IModel ConfigureChannel(string queue)
+    public IModel ConfigureChannel(string identifier)
     {
-        if (_channels.TryGetValue(queue, out var existChannel)) return existChannel;
+        if (_channels.TryGetValue(identifier, out var existChannel)) return existChannel;
         
         var channel = _connection.CreateModel();
-        if(_channels.TryAdd(queue, channel)) return channel;
+        if(_channels.TryAdd(identifier, channel)) return channel;
         channel.Dispose();
-        return _channels[queue];
+        return _channels[identifier];
     }
 
-    public void Send(string queue, string message, string? exchange = null, IBasicProperties? properties = null)
+    public void Send(
+        string channelIdentifier,
+        string queue,
+        string message,
+        string? exchange = null,
+        IBasicProperties? properties = null)
     {
-        if (!_channels.TryGetValue(queue, out var channel)) 
+        if (!_channels.TryGetValue(channelIdentifier, out var channel)) 
             throw new InvalidOperationException("You not configure this channel");
         
         channel.BasicPublish(
@@ -48,9 +53,13 @@ public class NotifyProvider : IDisposable
             body: Encoding.UTF8.GetBytes(message));
     }
 
-    public void StartReceiving(string queue, bool isAutoAck, IBasicConsumer? consumer)
+    public void StartReceiving(
+        string channelIdentifier,
+        string queue,
+        bool isAutoAck,
+        IBasicConsumer? consumer)
     {
-        if (!_channels.TryGetValue(queue, out var channel)) 
+        if (!_channels.TryGetValue(channelIdentifier, out var channel)) 
             throw new InvalidOperationException("You not configure this channel");
         
         channel.BasicConsume(

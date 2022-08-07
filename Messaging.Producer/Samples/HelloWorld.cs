@@ -23,7 +23,7 @@ internal class HelloWorld
     public void DoWork()
     {
         const string message = "Hello World!";
-        _provider.Send(Queue, message);
+        _provider.Send(Queue, Queue, message);
         Console.WriteLine(" [x] Sent {0}", message);
     }
 }

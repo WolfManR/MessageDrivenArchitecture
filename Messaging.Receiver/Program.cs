@@ -2,9 +2,9 @@
 
 using var provider = NotifyProvider.Create(new MessagingConfiguration());
 
-new HelloWorld(provider).Subscribe();
+// new HelloWorld(provider).Subscribe();
 
-new Worker(provider).Subscribe();
+// new Worker(provider).Subscribe();
 
 new Receiver(provider).Subscribe();
 
