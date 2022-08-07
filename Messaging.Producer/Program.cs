@@ -3,6 +3,10 @@ using Messaging.Producer.Samples;
 
 using var provider = NotifyProvider.Create(new MessagingConfiguration());
 
-new HelloWorld(provider).DoWork();
+// may work only one
 
-new Worker(provider).DoWork();
+// new HelloWorld(provider).DoWork();
+
+// new Worker(provider).DoWork();
+
+new Producer(provider).DoWork();
