@@ -1,10 +1,16 @@
-﻿public class Hall : IDisposable
+﻿using Messaging;
+using RabbitMQ.Client;
+
+public class Hall : IDisposable
 {
     private readonly List<Table> _tables = new();
-    private readonly Notifier _notifier = new() { SendDelay = 300 };
     private readonly PeriodicTimer _timer = new (TimeSpan.FromSeconds(20));
     private readonly CancellationTokenSource _freeTablesCancellationSource = new();
     private readonly AutoResetEvent _event = new(true);
+    
+    private readonly NotifyProvider _notifyProvider;
+    private readonly IBasicProperties _notifyProperties;
+    private const string NotificationQueue = "restaurant_notifications";
     
     public Hall()
     {
@@ -13,6 +19,17 @@
             _tables.Add(new Table(i));
         }
 
+        var provider = _notifyProvider = NotifyProvider.Create(new MessagingConfiguration());
+        
+        var channel = provider.ConfigureChannel(NotificationQueue);
+        channel.QueueDeclare(queue: NotificationQueue,
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: null);
+        var messageProperties = _notifyProperties = channel.CreateBasicProperties();
+        messageProperties.Persistent = true;
+        
         FreeTables(_freeTablesCancellationSource.Token);
     }
 
@@ -58,9 +75,12 @@
             await Task.Delay(1000 * 5);
             table?.Set(TableState.Booked);
 
-            await _notifier.Send(table is null
-                ? "К сожалению, сейчас все столики заняты"
-                : "Готово! Ваш столик номер " + table.Id);
+            _notifyProvider.Send(
+                NotificationQueue,
+                table is null
+                    ? "К сожалению, сейчас все столики заняты"
+                    : "Готово! Ваш столик номер " + table.Id, 
+                properties:_notifyProperties);
             _event.Set();
         });
     }
@@ -94,9 +114,12 @@
             
             table?.Set(TableState.Free);
 
-            await _notifier.Send(table is null
-                ? "Такого столика нет в нашем ресторане"
-                : "Готово! Мы отменили вашу бронь");
+            _notifyProvider.Send(
+                NotificationQueue,
+                table is null
+                    ? "Такого столика нет в нашем ресторане"
+                    : "Готово! Мы отменили вашу бронь", 
+                properties:_notifyProperties);
             _event.Set();
         });
     }
@@ -107,5 +130,6 @@
         _event.Dispose();
         _timer.Dispose();
         _freeTablesCancellationSource.Dispose();
+        _notifyProvider.Dispose();
     }
 }
