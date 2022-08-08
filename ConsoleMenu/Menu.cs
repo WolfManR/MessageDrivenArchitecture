@@ -41,6 +41,7 @@ public class Menu
         Console.CursorVisible = false;
         ReprintWithHeader();
         _isExit = false;
+        // TODO: this is bad, may generate loop inside many loops in menu tree
         while (!_isExit)
         {
             UpdateMenu();
@@ -58,6 +59,30 @@ public class Menu
         _menuItemList.Add(new(_menuItemList.Count, text, action));
         return true;
     }
+
+    /// <summary>
+    /// Will open parent menu if it exist
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Throw if parent menu not registered</exception>
+    public void Back()
+    {
+        if (ParentMenu is null) throw new InvalidOperationException("You not register parent menu");
+        
+        HideMenu();
+        ParentMenu?.ShowMenu();
+    }
+
+    /// <summary>
+    /// Exit from menu loop
+    /// </summary>
+    public void Close()
+    {
+        // TODO: fix this: on close open parent menu
+        ParentMenu?.Close();
+        HideMenu();
+    }
+    
+    private void HideMenu() => _isExit = true;
 
     private void DrawHeader()
     {
@@ -94,8 +119,6 @@ public class Menu
 
     private static void Clear() => Console.Clear();
     
-    private void HideMenu() => _isExit = true;
-    
     private void ReprintWithoutHeader()
     {
         Clear();
@@ -127,8 +150,7 @@ public class Menu
                 }
                 break;
             case ConsoleKey.Escape:
-                HideMenu();
-                ParentMenu?.ShowMenu();
+                Back();
                 break;
             case ConsoleKey.Enter:
                 ExecuteMenuItem();
