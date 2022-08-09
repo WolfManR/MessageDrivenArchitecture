@@ -44,8 +44,6 @@ public class Hall : IDisposable
     public void BookFreeTable(int countOfPersons)
     {
         _event.WaitOne();
-        Console.WriteLine("Добрый день! Подождите секунду я подберу столик и подтвержу вашу бронь, оставайтесь на линии");
-        
         var table = _tables.FirstOrDefault(t => t.SeatsCount >= countOfPersons && t.State == TableState.Free);
         
         Thread.Sleep(1000*5);
@@ -59,11 +57,8 @@ public class Hall : IDisposable
     public void BookFreeTableAsync(int countOfPersons)
     {
         _event.WaitOne();
-        Console.WriteLine("Добрый день! Подождите секунду я подберу столик и подтвержу вашу бронь, вам придёт уведомление");
-
         Task.Run(async () =>
         {
-            
             var table = _tables.FirstOrDefault(t => t.SeatsCount >= countOfPersons && t.State == TableState.Free);
 
             await Task.Delay(1000 * 5);
@@ -83,39 +78,39 @@ public class Hall : IDisposable
     public void FreeTable(int id)
     {
         _event.WaitOne();
-        Console.WriteLine("Добрый день! Подождите секунду я освобожу столик, оставайтесь на линии");
         var table = _tables.FirstOrDefault(t => t.Id == id);
         
         Thread.Sleep(1000*5);
-
-        table?.Set(TableState.Free);
-
-        Console.WriteLine(table is null
-            ? "Такого столика нет в нашем ресторане"
-            : "Готово! Мы отменили вашу бронь");
+        
+        if (table is not null)
+        {
+            table.Set(TableState.Free);
+            Console.WriteLine("Столик под номером" + id + "свободен");
+        }
+        
         _event.Set();
     }
 
     public void FreeTableAsync(int id)
     {
         _event.WaitOne();
-        Console.WriteLine("Добрый день! Подождите секунду я подберу столик и подтвержу вашу бронь, вам придёт уведомление");
-
         Task.Run(async () =>
         {
             var table = _tables.FirstOrDefault(t => t.Id == id && t.State == TableState.Booked);
 
             await Task.Delay(1000 * 5);
             
-            table?.Set(TableState.Free);
-
-            _notifyProvider.Send(
-                NotificationExchange,
-                string.Empty,
-                table is null
-                    ? "Такого столика нет в нашем ресторане"
-                    : "Готово! Мы отменили вашу бронь", 
-                NotificationExchange);
+            if (table is not null)
+            {
+                table.Set(TableState.Free);
+                
+                _notifyProvider.Send(
+                    NotificationExchange,
+                    string.Empty, 
+                    "Столик под номером" + id + "свободен", 
+                    NotificationExchange);
+            }
+            
             _event.Set();
         });
     }

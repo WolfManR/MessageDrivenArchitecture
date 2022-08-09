@@ -13,8 +13,8 @@ bookTableMenu.AddMenuItem("обратно", bookTableMenu.Back);
 
 Menu freeTableMenu = new();
 freeTableMenu.SubTitle = "выберите способ уведомления";
-freeTableMenu.AddMenuItem("мы уведомим Вас по смс (асинхронно)", FreeTable(rest.BookFreeTableAsync).LogExecuteTime);
-freeTableMenu.AddMenuItem("подождите на линии, мы Вас оповестим (синхронно)", FreeTable(rest.BookFreeTable).LogExecuteTime);
+freeTableMenu.AddMenuItem("мы уведомим Вас по смс (асинхронно)", FreeTable(rest.FreeTableAsync).LogExecuteTime);
+freeTableMenu.AddMenuItem("подождите на линии, мы Вас оповестим (синхронно)", FreeTable(rest.FreeTable).LogExecuteTime);
 freeTableMenu.AddMenuItem("обратно", freeTableMenu.Back);
 freeTableMenu.AddMenuItem("Выход", freeTableMenu.Close);
 
