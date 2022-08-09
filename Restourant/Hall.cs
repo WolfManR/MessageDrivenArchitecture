@@ -1,6 +1,10 @@
 ﻿using Messaging;
 using RabbitMQ.Client;
+using Restourant;
 
+/// <summary>
+/// It is a projection of the restaurant hall
+/// </summary>
 public class Hall : IDisposable
 {
     private readonly List<Table> _tables = new();
@@ -27,20 +31,9 @@ public class Hall : IDisposable
         FreeTables(_freeTablesCancellationSource.Token);
     }
 
-    private async Task FreeTables(CancellationToken token)
-    {
-        while (await _timer.WaitForNextTickAsync(token))
-        {
-            if(token.IsCancellationRequested) return;
-            
-            var bookedTables = _tables.Where(t => t.State == TableState.Booked).Select(t => t.Id).ToArray();
-            if(bookedTables.Length == 0) continue;
-
-            foreach (var tableId in bookedTables)
-                FreeTableAsync(tableId);
-        }
-    }
-
+    /// <summary>
+    /// Books a table (synchronously)
+    /// </summary>
     public void BookFreeTable(int countOfPersons)
     {
         _event.WaitOne();
@@ -54,6 +47,9 @@ public class Hall : IDisposable
         _event.Set();
     }
 
+    /// <summary>
+    /// Books a table (asynchronously)
+    /// </summary>
     public void BookFreeTableAsync(int countOfPersons)
     {
         _event.WaitOne();
@@ -75,6 +71,9 @@ public class Hall : IDisposable
         });
     }
     
+    /// <summary>
+    /// Releases the reserved table (synchronously)
+    /// </summary>
     public void FreeTable(int id)
     {
         _event.WaitOne();
@@ -91,6 +90,9 @@ public class Hall : IDisposable
         _event.Set();
     }
 
+    /// <summary>
+    /// Releases the reserved table (asynchronously)
+    /// </summary>
     public void FreeTableAsync(int id)
     {
         _event.WaitOne();
@@ -122,5 +124,19 @@ public class Hall : IDisposable
         _timer.Dispose();
         _freeTablesCancellationSource.Dispose();
         _notifyProvider.Dispose();
+    }
+    
+    private async Task FreeTables(CancellationToken token)
+    {
+        while (await _timer.WaitForNextTickAsync(token))
+        {
+            if(token.IsCancellationRequested) return;
+            
+            var bookedTables = _tables.Where(t => t.State == TableState.Booked).Select(t => t.Id).ToArray();
+            if(bookedTables.Length == 0) continue;
+
+            foreach (var tableId in bookedTables)
+                FreeTableAsync(tableId);
+        }
     }
 }

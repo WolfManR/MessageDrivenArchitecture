@@ -3,6 +3,9 @@ using RabbitMQ.Client;
 
 namespace Messaging;
 
+/// <summary>
+/// Notifications provider of rabbit mq
+/// </summary>
 public class NotifyProvider : IDisposable
 {
     private readonly IConnection _connection;
@@ -14,6 +17,11 @@ public class NotifyProvider : IDisposable
         _connection = connection;
     }
     
+    /// <summary>
+    /// Create Notify provider with connection configuration
+    /// </summary>
+    /// <param name="configuration"></param>
+    /// <returns>Notify provider</returns>
     public static NotifyProvider Create(MessagingConfiguration configuration)
     {
         ConnectionFactory factory = new()
@@ -26,6 +34,11 @@ public class NotifyProvider : IDisposable
         return new(factory.CreateConnection());
     }
 
+    /// <summary>
+    /// Creates channel and cache it
+    /// </summary>
+    /// <param name="identifier"></param>
+    /// <returns></returns>
     public IModel ConfigureChannel(string identifier)
     {
         if (_channels.TryGetValue(identifier, out var existChannel)) return existChannel;
@@ -36,6 +49,17 @@ public class NotifyProvider : IDisposable
         return _channels[identifier];
     }
 
+    /// <summary>
+    /// Send message to message bus service
+    /// </summary>
+    /// <param name="channelIdentifier"></param>
+    /// <param name="queue"></param>
+    /// <param name="message"></param>
+    /// <param name="exchange"></param>
+    /// <param name="properties"></param>
+    /// <exception cref="InvalidOperationException">
+    /// throws if channel with <paramref name="channelIdentifier"/> not cached
+    /// </exception>
     public void Send(
         string channelIdentifier,
         string queue,
@@ -53,6 +77,16 @@ public class NotifyProvider : IDisposable
             body: Encoding.UTF8.GetBytes(message));
     }
 
+    /// <summary>
+    /// Start receiving messages from message bus service using <paramref name="consumer"/>
+    /// </summary>
+    /// <param name="channelIdentifier"></param>
+    /// <param name="queue"></param>
+    /// <param name="isAutoAck"></param>
+    /// <param name="consumer"></param>
+    /// <exception cref="InvalidOperationException">
+    /// throws if channel with <paramref name="channelIdentifier"/> not cached
+    /// </exception>
     public void StartReceiving(
         string channelIdentifier,
         string queue,
