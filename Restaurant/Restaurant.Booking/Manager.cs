@@ -1,5 +1,8 @@
 ﻿namespace Restaurant.Booking;
 
+/// <summary>
+/// Restaurant manager
+/// </summary>
 public class Manager
 {
     private readonly Hall _hall;
@@ -12,12 +15,15 @@ public class Manager
     /// <summary>
     /// Books a table
     /// </summary>
-    public async Task BookFreeTable(int countOfPersons)
+    public async Task<bool> BookFreeTable(int countOfPersons)
     {
         await Task.Delay(1000 * 5);
 
         var table = _hall.FindFreeTable(countOfPersons);
-        
+
+        table?.Set(TableState.Booked);
+
+        return table is not null;
         // Console.WriteLine(table is null
         //     ? "К сожалению, сейчас все столики заняты"
         //     : "Готово! Ваш столик номер " + table.Id);
