@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.Booking;
 using Restaurant.Messages;
@@ -10,14 +11,31 @@ builder.Services
     .AddSingleton<Hall>()
     .AddSingleton<Manager>();
 
+builder.Services
+    .AddMassTransit(x => x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+        cfg.ConfigureEndpoints(context);
+    }));
+
 var app = builder.Build();
 
 app.UseSwagger().UseSwaggerUI();
 
-app.MapPost("/Book", static async (int countOfPersons, Dish? dish, [FromServices] Manager manager) =>
+app.MapPost("/Book", static async (int countOfPersons, Dish? dish, [FromServices] Manager manager, [FromServices] IBus messageBus) =>
 {
-    if(await manager.BookFreeTable(countOfPersons)) return Results.Ok();
-    return Results.BadRequest("Нет свободного столика на указанное число мест");
+    if (!await manager.BookFreeTable(countOfPersons))
+    {
+        return Results.BadRequest("Нет свободного столика на указанное число мест");
+    }
+    
+    TableBooked order = new(NewId.NextGuid(), NewId.NextSequentialGuid(), true, dish);
+    await messageBus.Publish(order);
+    return Results.Ok(order.OrderId);
 });
 
 app.MapPost("/Free/{orderId}", static (Guid orderId, Manager manager) => Results.Problem("Not released feature"));
