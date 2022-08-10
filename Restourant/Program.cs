@@ -1,52 +1,64 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using ConsoleMenu;
 
 Console.OutputEncoding = Encoding.UTF8;
 using var rest = new Hall();
-while (true)
+
+Menu bookTableMenu = new();
+bookTableMenu.SubTitle = "выберите способ уведомления";
+bookTableMenu.AddMenuItem("мы уведомим Вас по смс (асинхронно)", BookTable(rest.BookFreeTableAsync).LogExecuteTime);
+bookTableMenu.AddMenuItem("подождите на линии, мы Вас оповестим (синхронно)", BookTable(rest.BookFreeTable).LogExecuteTime);
+bookTableMenu.AddMenuItem("обратно", bookTableMenu.Back);
+
+Menu freeTableMenu = new();
+freeTableMenu.SubTitle = "выберите способ уведомления";
+freeTableMenu.AddMenuItem("мы уведомим Вас по смс (асинхронно)", FreeTable(rest.FreeTableAsync).LogExecuteTime);
+freeTableMenu.AddMenuItem("подождите на линии, мы Вас оповестим (синхронно)", FreeTable(rest.FreeTable).LogExecuteTime);
+freeTableMenu.AddMenuItem("обратно", freeTableMenu.Back);
+freeTableMenu.AddMenuItem("Выход", freeTableMenu.Close);
+
+Menu mainMenu = new();
+mainMenu.SubTitle = "Привет! Желаете забронировать или освободить столик?";
+bookTableMenu.ParentMenu = mainMenu;
+freeTableMenu.ParentMenu = mainMenu;
+
+mainMenu.AddMenuItem("Забронировать", bookTableMenu.ShowMenu);
+mainMenu.AddMenuItem("Освободить", freeTableMenu.ShowMenu);
+mainMenu.AddMenuItem("Выход", mainMenu.Close);
+mainMenu.ShowMenu();
+
+Action BookTable(Action<int> bookBehavior)
 {
-    Console.WriteLine("Привет! Желаете забронировать или освободить столик?\n" +
-                      "1 - забронировать, мы уведомим Вас по смс (асинхронно)\n" +
-                      "2 - забронировать, подождите на линии, мы Вас оповестим (синхронно)\n"+
-                      "3 - освободить, мы уведомим Вас по смс (асинхронно)\n" +
-                      "4 - освободить, подождите на линии, мы Вас оповестим (синхронно)\n"
-                      );
-
-    var choiceValid = int.TryParse(Console.ReadLine(), out var choice);
-    if (!choiceValid || (choiceValid && choice is < 1 or >4))
+    return () =>
     {
-        Console.WriteLine("Введите, пожалуйста от 1 до 4");
-        continue;
-    }
+        Console.WriteLine("На сколько мест столик желаете:");
+        int.TryParse(Console.ReadLine(), out var places);
+        bookBehavior.Invoke(places);
+    };
+}
 
-    var stopWatch = new Stopwatch();
-    stopWatch.Start();
-
-    switch (choice)
+Action FreeTable(Action<int> freeBehavior)
+{
+    return () =>
     {
-        case 1:
-            rest.BookFreeTableAsync(1);
-            break;
-        case 2:
-            rest.BookFreeTable(1);
-            break;
-        case 3:
-        case 4:
-            Console.WriteLine("Укажите номер столика");
-            int.TryParse(Console.ReadLine(), out var tableId);
-            if (choice == 3)
-            {
-                rest.FreeTableAsync(tableId);
-            }
-            else
-            {
-                rest.FreeTable(tableId);
-            }
-            break;
-    }
+        Console.WriteLine("Укажите номер столика");
+        int.TryParse(Console.ReadLine(), out var tableId);
+        freeBehavior.Invoke(tableId);
+    };
+}
 
-    Console.WriteLine("Спасибо за Ваше обращение!");
-    stopWatch.Stop();
-    var ts = stopWatch.Elapsed;
-    Console.WriteLine($"{ts.Seconds:80}:{ts.Milliseconds:00}");
+static class LogExtension
+{
+    public static void LogExecuteTime(this Action execution)
+    {
+        var stopWatch = new Stopwatch();
+        stopWatch.Start();
+    
+        execution.Invoke();
+    
+        stopWatch.Stop();
+        var ts = stopWatch.Elapsed;
+        Console.WriteLine($"{ts.Seconds:80}:{ts.Milliseconds:00}");
+    }
 }
