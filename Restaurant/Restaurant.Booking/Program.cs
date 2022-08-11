@@ -11,16 +11,7 @@ builder.Services
     .AddSingleton<Hall>()
     .AddSingleton<Manager>();
 
-builder.Services
-    .AddMassTransit(x => x.UsingRabbitMq((context, cfg) =>
-    {
-        cfg.Host("localhost", "/", h =>
-        {
-            h.Username("guest");
-            h.Password("guest");
-        });
-        cfg.ConfigureEndpoints(context);
-    }));
+builder.Services.AddMassTransit(x => x.UsingRabbitMq((context, cfg) => cfg.ConfigureEndpoints(context)));
 
 var app = builder.Build();
 
