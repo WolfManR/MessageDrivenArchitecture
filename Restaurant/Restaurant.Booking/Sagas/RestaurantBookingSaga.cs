@@ -41,6 +41,12 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
                 x.Received = e => e.CorrelateById(context => context.Message.OrderId);
             });
 
+        Schedule(() => GuestIncome,
+            x => x.ClientId, x =>
+            {
+                x.Received = e => e.CorrelateById(context => context.Message.OrderId);
+            });
+
         Initially(
             When(BookingRequested)
                 .Then(context =>
@@ -48,6 +54,9 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
                     context.Saga.CorrelationId = context.Message.OrderId;
                     context.Saga.OrderId = context.Message.OrderId;
                     context.Saga.ClientId = context.Message.ClientId;
+
+                    context.Saga.IncomeTime = context.Message.IncomeTime;
+                    
                     _logger.LogInformation("Saga: {CreationDate}", context.Message.CreationDate);
                 })
                 .Schedule(BookingExpired,
@@ -63,7 +72,14 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
                     (INotify)new Notify(context.Saga.OrderId,
                         context.Saga.ClientId,
                         "Стол успешно забронирован"))
-                .Finalize(),
+                .Schedule(GuestIncome,
+                    context => new GuestIncome(context.Saga),
+                    context => TimeSpan.FromSeconds(context.Saga.IncomeTime))
+                .Publish(context =>
+                    (INotify)new Notify(context.Saga.OrderId,
+                        context.Saga.ClientId,
+                        "Ожидание гостя"))
+                .TransitionTo(AwaitingGuest),
             When(BookingRequestFault)
                 .Then(context => _logger.LogError("Ошибочка вышла! Заказ отменяется {Order}", context.Saga.OrderId))
                 .Publish(context => (INotify)new Notify(context.Saga.OrderId,
@@ -79,6 +95,14 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
                         context.Saga.OrderId))
                 .Finalize()
         );
+        
+        During(AwaitingGuest,
+            When(GuestIncome.Received)
+                .Publish(context =>
+                    (INotify)new Notify(context.Saga.OrderId,
+                        context.Saga.ClientId,
+                        "Гость прибыл"))
+                .Finalize());
 
         SetCompletedWhenFinalized();
     }
@@ -92,4 +116,9 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
 
     public Schedule<RestaurantBooking, IBookingExpire> BookingExpired { get; private set; }
     public Event BookingApproved { get; private set; }
+    
+    
+    public State AwaitingGuest { get; private set; }
+    
+    public Schedule<RestaurantBooking, IGuestIncome> GuestIncome { get; private set; }
 }

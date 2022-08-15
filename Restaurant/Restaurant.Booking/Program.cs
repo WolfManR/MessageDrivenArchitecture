@@ -48,7 +48,7 @@ app.MapPost("/Book", static async (int countOfPersons, Dish? dish, [FromServices
         return Results.BadRequest("Нет свободного столика на указанное число мест");
     }
     
-    BookingRequest order = new(NewId.NextGuid(), NewId.NextSequentialGuid(), dish, DateTime.UtcNow);
+    BookingRequest order = new(NewId.NextGuid(), NewId.NextSequentialGuid(), dish, DateTime.UtcNow, Random.Shared.Next(7,15));
     await messageBus.Publish<IBookingRequest>(order);
     return Results.Ok(order.OrderId);
 });
