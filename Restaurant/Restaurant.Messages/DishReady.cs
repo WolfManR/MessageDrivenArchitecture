@@ -3,18 +3,14 @@
 public interface IDishReady
 {
     public Guid OrderId { get; }
-        
-    public bool Ready { get; }
 }
 
 public class DishReady : IDishReady
 {
-    public DishReady(Guid orderId, bool ready)
+    public DishReady(Guid orderId)
     {
         OrderId = orderId;
-        Ready = ready;
     }
 
     public Guid OrderId { get; }
-    public bool Ready { get; }
 }

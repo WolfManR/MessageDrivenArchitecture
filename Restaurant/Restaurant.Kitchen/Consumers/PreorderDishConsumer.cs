@@ -16,16 +16,6 @@ public class PreorderDishConsumer : IConsumer<IBookingRequest>
     {
         if (context.Message.PreOrder is not {} dish) return;
         var orderId = context.Message.OrderId;
-        // wait for check that dish can be cooked
-        await Task.Delay(200);
-        
-        if (!_chef.CanCookDish(dish))
-        {
-            await context.Publish<IDishOrderApproved>(new DishOrderApproved(orderId, false));
-            return;
-        }
-        
-        await context.Publish<IDishOrderApproved>(new DishOrderApproved(orderId, true));
         
         // wait for dish
         await Task.Delay(2000);
@@ -35,6 +25,6 @@ public class PreorderDishConsumer : IConsumer<IBookingRequest>
             await Task.Delay(300);
         }
 
-        await context.Publish<IDishReady>(new DishReady(orderId, true));
+        await context.Publish<IDishReady>(new DishReady(orderId));
     }
 }
