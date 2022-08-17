@@ -9,6 +9,7 @@ builder.Services.AddEndpointsApiExplorer().AddSwaggerGen();
 
 builder.Services.AddMassTransit(x =>
 {
+    x.AddConsumer<BookingCancellationConsumer>();
     x.AddConsumer<PreorderDishConsumer>();
 
     x.UsingRabbitMq((context, cfg) => cfg.ConfigureEndpoints(context));

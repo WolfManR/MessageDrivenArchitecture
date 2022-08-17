@@ -66,6 +66,8 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
         );
 
         During(AwaitingBookingApproved,
+            When(TableBooked)
+                .Then(context => context.Saga.TableId = context.Message.TableId),
             When(BookingApproved)
                 .Unschedule(BookingExpired)
                 .Publish(context =>
@@ -86,7 +88,7 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
                     context.Saga.ClientId,
                     "Приносим извинения, стол забронировать не получилось."))
                 .Publish(context => (IBookingCancellation)
-                    new BookingCancellation(context.Message.Message.OrderId))
+                    new BookingCancellation(context.Message.Message.OrderId, context.Saga.TableId))
                 .Finalize(),
             When(BookingExpired.Received)
                 .Then(context => 
