@@ -9,10 +9,27 @@ builder.Services.AddEndpointsApiExplorer().AddSwaggerGen();
 
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumer<BookingCancellationConsumer>();
-    x.AddConsumer<PreorderDishConsumer>();
+    x.AddConsumer<BookingCancellationConsumer>(cfg =>
+        {
+            cfg.UseMessageRetry(r => r.Incremental(3, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2)));
+            cfg.UseScheduledRedelivery(r => r.Incremental(3, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10)));
+        })
+        .Endpoint(e => e.Temporary = true);
+    x.AddConsumer<PreorderDishConsumer>(cfg =>
+        {
+            cfg.UseMessageRetry(r => r.Incremental(3, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2)));
+            cfg.UseScheduledRedelivery(r => r.Incremental(3, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10)));
+        })
+        .Endpoint(e => e.Temporary = true);
 
-    x.UsingRabbitMq((context, cfg) => cfg.ConfigureEndpoints(context));
+    x.AddDelayedMessageScheduler();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.UseDelayedMessageScheduler();
+        cfg.UseInMemoryOutbox();
+        cfg.ConfigureEndpoints(context);
+    });
 });
 
 builder.Services.AddSingleton<Chef>();
