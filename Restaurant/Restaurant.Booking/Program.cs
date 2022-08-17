@@ -1,6 +1,9 @@
+using System.Reflection;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.Booking;
+using Restaurant.Booking.Consumers;
+using Restaurant.Booking.Sagas;
 using Restaurant.Messages;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,7 +14,28 @@ builder.Services
     .AddSingleton<Hall>()
     .AddSingleton<Manager>();
 
-builder.Services.AddMassTransit(x => x.UsingRabbitMq((context, cfg) => cfg.ConfigureEndpoints(context)));
+builder.Services    
+    .AddTransient<RestaurantBooking>()
+    .AddTransient<RestaurantBookingSaga>();
+
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<RestaurantBookingRequestConsumer>().Endpoint(e => e.Temporary = true);
+    x.AddConsumer<BookingRequestFaultConsumer>().Endpoint(e => e.Temporary = true);
+
+    x.AddSagaStateMachine<RestaurantBookingSaga, RestaurantBooking>()
+        .Endpoint(e => e.Temporary = true)
+        .InMemoryRepository();
+    
+    x.AddDelayedMessageScheduler();
+    
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.UseDelayedMessageScheduler();
+        cfg.UseInMemoryOutbox();
+        cfg.ConfigureEndpoints(context);
+    });
+});
 
 var app = builder.Build();
 
@@ -24,8 +48,8 @@ app.MapPost("/Book", static async (int countOfPersons, Dish? dish, [FromServices
         return Results.BadRequest("Нет свободного столика на указанное число мест");
     }
     
-    TableBooked order = new(NewId.NextGuid(), NewId.NextSequentialGuid(), true, dish);
-    await messageBus.Publish(order);
+    BookingRequest order = new(NewId.NextGuid(), NewId.NextSequentialGuid(), dish, DateTime.UtcNow, Random.Shared.Next(7,15));
+    await messageBus.Publish<IBookingRequest>(order);
     return Results.Ok(order.OrderId);
 });
 

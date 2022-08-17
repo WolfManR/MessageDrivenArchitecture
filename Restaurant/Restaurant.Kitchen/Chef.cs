@@ -1,19 +1,14 @@
-﻿using MassTransit;
-using Restaurant.Messages;
+﻿using Restaurant.Messages;
 
 namespace Restaurant.Kitchen;
 
 public class Chef
 {
-    private readonly IBus _bus;
+    private readonly Random _random = Random.Shared;
 
-    public Chef(IBus bus)
+    public bool CheckDishReady(Guid orderId, Dish? dish)
     {
-        _bus = bus;
-    }
-    
-    public void CheckDishReady(Guid orderId, Dish? dish)
-    {
-        _bus.Publish<IDishReady>(new DishReady(orderId, true));
+        // Check ready dish
+        return _random.Next(0, 50) > 15;
     }
 }

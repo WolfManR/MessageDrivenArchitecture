@@ -1,6 +1,7 @@
 using System.Reflection;
 using MassTransit;
 using Restaurant.Notification;
+using Restaurant.Notification.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +9,7 @@ builder.Services.AddEndpointsApiExplorer().AddSwaggerGen();
 
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumers(Assembly.GetExecutingAssembly());
+    x.AddConsumer<NotifyConsumer>().Endpoint(e => e.Temporary = true);
     
     x.UsingRabbitMq((context, cfg) =>
     {

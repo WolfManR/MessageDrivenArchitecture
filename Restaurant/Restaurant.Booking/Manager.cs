@@ -24,9 +24,6 @@ public class Manager
         table?.Set(TableState.Booked);
 
         return table is not null;
-        // Console.WriteLine(table is null
-        //     ? "К сожалению, сейчас все столики заняты"
-        //     : "Готово! Ваш столик номер " + table.Id);
     }
 
     /// <summary>
@@ -38,15 +35,6 @@ public class Manager
 
         await Task.Delay(1000 * 5);
 
-        if (table is not null)
-        {
-            table.Set(TableState.Free);
-
-            // _notifyProvider.Send(
-            //     NotificationExchange,
-            //     string.Empty, 
-            //     "Столик под номером" + id + "свободен", 
-            //     NotificationExchange);
-        }
+        table?.Set(TableState.Free);
     }
 }
