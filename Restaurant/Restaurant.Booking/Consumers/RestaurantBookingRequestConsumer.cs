@@ -17,8 +17,8 @@ public class RestaurantBookingRequestConsumer: IConsumer<IBookingRequest>
     public async Task Consume(ConsumeContext<IBookingRequest> context)
     {
         _logger.LogInformation("[OrderId: {Order}]", context.Message.OrderId);
-        var result = await _manager.BookFreeTable(1);
-            
-        await context.Publish<ITableBooked>(new TableBooked(context.Message.OrderId, result));
+        var (success, tableId) = await _manager.BookFreeTable(context.Message.CountOfPersons);
+        if (!success) throw new Exception("нет свободных столов на данное число людей");
+        await context.Publish<ITableBooked>(new TableBooked(context.Message.OrderId, tableId!.Value));
     }
 }

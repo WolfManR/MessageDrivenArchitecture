@@ -14,21 +14,35 @@ builder.Services
     .AddSingleton<Hall>()
     .AddSingleton<Manager>();
 
-builder.Services    
+builder.Services
     .AddTransient<RestaurantBooking>()
     .AddTransient<RestaurantBookingSaga>();
 
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumer<RestaurantBookingRequestConsumer>().Endpoint(e => e.Temporary = true);
-    x.AddConsumer<BookingRequestFaultConsumer>().Endpoint(e => e.Temporary = true);
+    x.AddConsumer<RestaurantBookingRequestConsumer>(cfg =>
+        {
+            cfg.UseMessageRetry(r => r.Incremental(3, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2)));
+            cfg.UseScheduledRedelivery(r => r.Incremental(3, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10)));
+        })
+        .Endpoint(e => e.Temporary = true);
+    x.AddConsumer<BookingRequestFaultConsumer>(cfg =>
+    {
+        cfg.UseMessageRetry(r => r.Incremental(3, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2)));
+        cfg.UseScheduledRedelivery(r => r.Incremental(3, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10)));
+    }).Endpoint(e => e.Temporary = true);
+    x.AddConsumer<BookingCancellationConsumer>(cfg =>
+    {
+        cfg.UseMessageRetry(r => r.Incremental(3, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2)));
+        cfg.UseScheduledRedelivery(r => r.Incremental(3, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10)));
+    }).Endpoint(e => e.Temporary = true);
 
     x.AddSagaStateMachine<RestaurantBookingSaga, RestaurantBooking>()
         .Endpoint(e => e.Temporary = true)
         .InMemoryRepository();
-    
+
     x.AddDelayedMessageScheduler();
-    
+
     x.UsingRabbitMq((context, cfg) =>
     {
         cfg.UseDelayedMessageScheduler();
@@ -43,12 +57,13 @@ app.UseSwagger().UseSwaggerUI();
 
 app.MapPost("/Book", static async (int countOfPersons, Dish? dish, [FromServices] Manager manager, [FromServices] IBus messageBus) =>
 {
-    if (!await manager.BookFreeTable(countOfPersons))
-    {
-        return Results.BadRequest("Нет свободного столика на указанное число мест");
-    }
-    
-    BookingRequest order = new(NewId.NextGuid(), NewId.NextSequentialGuid(), dish, DateTime.UtcNow, Random.Shared.Next(7,15));
+    BookingRequest order = new(
+        orderId: NewId.NextGuid(),
+        clientId: NewId.NextSequentialGuid(),
+        preOrder: dish,
+        creationDate: DateTime.UtcNow,
+        incomeTime: Random.Shared.Next(7, 15),
+        countOfPersons: countOfPersons);
     await messageBus.Publish<IBookingRequest>(order);
     return Results.Ok(order.OrderId);
 });

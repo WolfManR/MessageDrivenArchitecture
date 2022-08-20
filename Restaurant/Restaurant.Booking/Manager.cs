@@ -15,7 +15,7 @@ public class Manager
     /// <summary>
     /// Books a table
     /// </summary>
-    public async Task<bool> BookFreeTable(int countOfPersons)
+    public async Task<(bool, int?)> BookFreeTable(int countOfPersons)
     {
         await Task.Delay(1000 * 5);
 
@@ -23,7 +23,7 @@ public class Manager
 
         table?.Set(TableState.Booked);
 
-        return table is not null;
+        return (table is not null, table?.Id);
     }
 
     /// <summary>

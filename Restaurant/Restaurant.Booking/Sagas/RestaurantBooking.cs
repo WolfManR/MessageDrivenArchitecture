@@ -23,4 +23,5 @@ public class RestaurantBooking : SagaStateMachineInstance
     public Guid? ExpirationId { get; set; }
     
     public int IncomeTime { get; set; }
+    public int? TableId { get; set; }
 }
