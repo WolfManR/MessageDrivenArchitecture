@@ -42,7 +42,7 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
             });
 
         Schedule(() => GuestIncome,
-            x => x.ClientId, x =>
+            x => x.GuestIncomeId, x =>
             {
                 x.Received = e => e.CorrelateById(context => context.Message.OrderId);
             });
