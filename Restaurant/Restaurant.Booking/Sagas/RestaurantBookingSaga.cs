@@ -91,10 +91,13 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
                     new BookingCancellation(context.Message.Message.OrderId, context.Saga.TableId))
                 .Finalize(),
             When(BookingExpired.Received)
+                // TODO: Ignore events
                 .Then(context => 
                     _logger.LogInformation(
                         "Отмена заказа {Order}, слишком долго исполнялся",
                         context.Saga.OrderId))
+                .Publish(context => (IBookingCancellation)
+                    new BookingCancellation(context.Message.OrderId, context.Saga.TableId))
                 .Finalize()
         );
         

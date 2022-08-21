@@ -28,13 +28,13 @@ public class RestaurantBookingRequestConsumer: IConsumer<IBookingRequest>
 
         if (model is not null && model.CheckMessageId(messageId))
         {
-            _logger.LogInformation("Second time {Message}", messageId);
+            _logger.LogInformation("BookingRequest Second time {Message}", messageId);
             return;
         }
             
         var requestModel = new BookingRequest(context.Message, messageId);
 
-        _logger.LogInformation("First time {Message}", messageId);
+        _logger.LogInformation("BookingRequest First time {Message}", messageId);
         var resultModel = model?.Update(requestModel, messageId) ?? requestModel;
         
         _repository.AddOrUpdate(resultModel);
