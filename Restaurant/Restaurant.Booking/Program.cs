@@ -1,8 +1,8 @@
-using System.Reflection;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.Booking;
 using Restaurant.Booking.Consumers;
+using Restaurant.Booking.Data;
 using Restaurant.Booking.Sagas;
 using Restaurant.Messages;
 
@@ -12,7 +12,8 @@ builder.Services.AddEndpointsApiExplorer().AddSwaggerGen();
 
 builder.Services
     .AddSingleton<Hall>()
-    .AddSingleton<Manager>();
+    .AddSingleton<Manager>()
+    .AddSingleton<IRepository<BookingRequestModel>, InMemoryRepository<BookingRequestModel>>();
 
 builder.Services
     .AddTransient<RestaurantBooking>()
@@ -45,6 +46,7 @@ builder.Services.AddMassTransit(x =>
 
     x.UsingRabbitMq((context, cfg) =>
     {
+        cfg.Durable = false;
         cfg.UseDelayedMessageScheduler();
         cfg.UseInMemoryOutbox();
         cfg.ConfigureEndpoints(context);
