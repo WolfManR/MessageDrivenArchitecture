@@ -22,8 +22,11 @@ public class RestaurantBookingRequestConsumer: IConsumer<IBookingRequest>
 
     public async Task Consume(ConsumeContext<IBookingRequest> context)
     {
-        var model = _repository.Get().FirstOrDefault(i => i.OrderId == context.Message.OrderId);
+        var orderId = context.Message.OrderId;
         var messageId = context.MessageId.ToString();
+
+        var model = _repository.Get().FirstOrDefault(i => i.OrderId == orderId);
+
         if (model is not null && model.CheckMessageId(messageId))
         {
             _logger.LogInformation("Second time {Message}", messageId);
@@ -31,7 +34,7 @@ public class RestaurantBookingRequestConsumer: IConsumer<IBookingRequest>
         }
             
         var requestModel = new BookingRequestModel(
-            context.Message.OrderId,
+            orderId,
             context.Message.ClientId,
             context.Message.PreOrder,
             context.Message.CreationDate,
@@ -42,9 +45,9 @@ public class RestaurantBookingRequestConsumer: IConsumer<IBookingRequest>
         
         _repository.AddOrUpdate(resultModel);
 
-        _logger.LogInformation("[OrderId: {Order}]", context.Message.OrderId);
+        _logger.LogInformation("[OrderId: {Order}]", orderId);
         var (success, tableId) = await _manager.BookFreeTable(context.Message.CountOfPersons);
         if (!success) throw new Exception("нет свободных столов на данное число людей");
-        await context.Publish<ITableBooked>(new TableBooked(context.Message.OrderId, tableId!.Value));
+        await context.Publish<ITableBooked>(new TableBooked(orderId, tableId!.Value));
     }
 }
