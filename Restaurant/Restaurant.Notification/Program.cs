@@ -16,6 +16,8 @@ builder.Services.AddMassTransit(x =>
         })
         .Endpoint(e => e.Temporary = true);
     
+    x.AddDelayedMessageScheduler();
+    
     x.UsingRabbitMq((context, cfg) =>
     {
         cfg.UseMessageRetry(r =>
@@ -28,14 +30,9 @@ builder.Services.AddMassTransit(x =>
             r.Ignore<ArgumentNullException>(x => x.Message.Contains("Consumer"));
         });
         
-        x.AddDelayedMessageScheduler();
-
-        x.UsingRabbitMq((context, cfg) =>
-        {
-            cfg.UseDelayedMessageScheduler();
-            cfg.UseInMemoryOutbox();
-            cfg.ConfigureEndpoints(context);
-        });
+        cfg.UseDelayedMessageScheduler();
+        cfg.UseInMemoryOutbox();
+        cfg.ConfigureEndpoints(context);
     });
 });
 
