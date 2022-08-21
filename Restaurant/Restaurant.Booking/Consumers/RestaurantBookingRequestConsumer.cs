@@ -1,5 +1,4 @@
 ﻿using MassTransit;
-using Restaurant.Booking.Data;
 using Restaurant.Messages;
 
 namespace Restaurant.Booking.Consumers;
@@ -7,12 +6,12 @@ namespace Restaurant.Booking.Consumers;
 public class RestaurantBookingRequestConsumer: IConsumer<IBookingRequest>
 {
     private readonly Manager _manager;
-    private readonly IRepository<BookingRequestModel> _repository;
+    private readonly IRepository<BookingRequest> _repository;
     private readonly ILogger<RestaurantBookingRequestConsumer> _logger;
 
     public RestaurantBookingRequestConsumer(
         Manager manager,
-        IRepository<BookingRequestModel> repository,
+        IRepository<BookingRequest> repository,
         ILogger<RestaurantBookingRequestConsumer> logger)
     {
         _manager = manager;
@@ -33,12 +32,7 @@ public class RestaurantBookingRequestConsumer: IConsumer<IBookingRequest>
             return;
         }
             
-        var requestModel = new BookingRequestModel(
-            orderId,
-            context.Message.ClientId,
-            context.Message.PreOrder,
-            context.Message.CreationDate,
-            messageId);
+        var requestModel = new BookingRequest(context.Message, messageId);
 
         _logger.LogInformation("First time {Message}", messageId);
         var resultModel = model?.Update(requestModel, messageId) ?? requestModel;

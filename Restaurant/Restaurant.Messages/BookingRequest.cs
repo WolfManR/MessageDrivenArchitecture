@@ -14,7 +14,7 @@ public interface IBookingRequest
     DateTime CreationDate { get; }
 }
 
-public class BookingRequest : IBookingRequest
+public sealed class BookingRequest : TransactionalData<BookingRequest, IBookingRequest>, IBookingRequest
 {
     public BookingRequest(Guid orderId, Guid clientId, Dish? preOrder, DateTime creationDate, int incomeTime, int countOfPersons)
     {
@@ -26,12 +26,28 @@ public class BookingRequest : IBookingRequest
         CountOfPersons = countOfPersons;
     }
 
-    public Guid OrderId { get; }
-    public Guid ClientId { get; }
-    public Dish? PreOrder { get; }
+    public BookingRequest(IBookingRequest model, string messageId) : base(model, messageId)
+    {
+        
+    }
     
-    public int IncomeTime { get; }
-    public int CountOfPersons { get; }
+    protected override void SetData(IBookingRequest data)
+    {
+        OrderId = data.OrderId;
+        ClientId = data.ClientId;
+        PreOrder = data.PreOrder;
+        CreationDate = data.CreationDate;
+        IncomeTime = data.IncomeTime;
+        CountOfPersons = data.CountOfPersons;
+        CreationDate = data.CreationDate;
+    }
+    
+    public Guid OrderId { get; private set;}
+    public Guid ClientId { get; private set;}
+    public Dish? PreOrder { get; private set;}
+    
+    public int IncomeTime { get; private set;}
+    public int CountOfPersons { get; private set;}
 
-    public DateTime CreationDate { get; }
+    public DateTime CreationDate { get; private set;}
 }
