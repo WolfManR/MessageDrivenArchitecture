@@ -2,7 +2,6 @@ using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.Booking;
 using Restaurant.Booking.Consumers;
-using Restaurant.Booking.Data;
 using Restaurant.Booking.Sagas;
 using Restaurant.Messages;
 
@@ -13,7 +12,7 @@ builder.Services.AddEndpointsApiExplorer().AddSwaggerGen();
 builder.Services
     .AddSingleton<Hall>()
     .AddSingleton<Manager>()
-    .AddSingleton<IRepository<BookingRequestModel>, InMemoryRepository<BookingRequestModel>>();
+    .AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
 
 builder.Services
     .AddTransient<RestaurantBooking>()
