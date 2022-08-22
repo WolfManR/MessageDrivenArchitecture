@@ -1,5 +1,6 @@
 using System.Reflection;
 using MassTransit;
+using Restaurant.Messages;
 using Restaurant.Notification;
 using Restaurant.Notification.Consumers;
 
@@ -36,7 +37,9 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-builder.Services.AddSingleton<Notifier>();
+builder.Services
+    .AddSingleton<Notifier>()
+    .AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
 
 var app = builder.Build();
 
