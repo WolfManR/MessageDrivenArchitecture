@@ -32,7 +32,9 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-builder.Services.AddSingleton<Chef>();
+builder.Services
+    .AddSingleton<Chef>()
+    .AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
 
 var app = builder.Build();
 
