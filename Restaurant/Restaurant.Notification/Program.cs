@@ -1,5 +1,6 @@
-using System.Reflection;
 using MassTransit;
+using MassTransit.Audit;
+using Restaurant.MassTransit;
 using Restaurant.Messages;
 using Restaurant.Notification;
 using Restaurant.Notification.Consumers;
@@ -7,6 +8,11 @@ using Restaurant.Notification.Consumers;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer().AddSwaggerGen();
+
+builder.Services
+    .AddSingleton<Notifier>()
+    .AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>))
+    .AddSingleton<IMessageAuditStore, LoggingAuditStore>();
 
 builder.Services.AddMassTransit(x =>
 {
@@ -18,6 +24,10 @@ builder.Services.AddMassTransit(x =>
         .Endpoint(e => e.Temporary = true);
     
     x.AddDelayedMessageScheduler();
+    
+    // Bad practice and useless
+    var serviceProvider = builder.Services.BuildServiceProvider();
+    var auditStore = serviceProvider.GetService<IMessageAuditStore>();
     
     x.UsingRabbitMq((context, cfg) =>
     {
@@ -34,12 +44,11 @@ builder.Services.AddMassTransit(x =>
         cfg.UseDelayedMessageScheduler();
         cfg.UseInMemoryOutbox();
         cfg.ConfigureEndpoints(context);
+        
+        cfg.ConnectSendAuditObservers(auditStore);
+        cfg.ConnectConsumeAuditObserver(auditStore);
     });
 });
-
-builder.Services
-    .AddSingleton<Notifier>()
-    .AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
 
 var app = builder.Build();
 

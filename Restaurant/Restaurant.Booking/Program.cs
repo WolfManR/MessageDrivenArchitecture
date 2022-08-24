@@ -1,8 +1,10 @@
 using MassTransit;
+using MassTransit.Audit;
 using Microsoft.AspNetCore.Mvc;
 using Restaurant.Booking;
 using Restaurant.Booking.Consumers;
 using Restaurant.Booking.Sagas;
+using Restaurant.MassTransit;
 using Restaurant.Messages;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +18,8 @@ builder.Services
 
 builder.Services
     .AddTransient<RestaurantBooking>()
-    .AddTransient<RestaurantBookingSaga>();
+    .AddTransient<RestaurantBookingSaga>()
+    .AddSingleton<IMessageAuditStore, LoggingAuditStore>();
 
 builder.Services.AddMassTransit(x =>
 {
@@ -43,12 +46,19 @@ builder.Services.AddMassTransit(x =>
 
     x.AddDelayedMessageScheduler();
 
+    // Bad practice and useless
+    var serviceProvider = builder.Services.BuildServiceProvider();
+    var auditStore = serviceProvider.GetService<IMessageAuditStore>();
+
     x.UsingRabbitMq((context, cfg) =>
     {
         cfg.Durable = false;
         cfg.UseDelayedMessageScheduler();
         cfg.UseInMemoryOutbox();
         cfg.ConfigureEndpoints(context);
+
+        cfg.ConnectSendAuditObservers(auditStore);
+        cfg.ConnectConsumeAuditObserver(auditStore);
     });
 });
 

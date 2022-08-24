@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restaurant.Messages", "Rest
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restaurant.Notification", "Restaurant\Restaurant.Notification\Restaurant.Notification.csproj", "{DECC8487-8B84-4F23-9199-4D0FCEB7D1CD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restaurant.MassTransit", "Restaurant\Restaurant.MassTransit\Restaurant.MassTransit.csproj", "{674364E1-6F40-4F62-941B-917ABB4C2447}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,6 +72,10 @@ Global
 		{DECC8487-8B84-4F23-9199-4D0FCEB7D1CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DECC8487-8B84-4F23-9199-4D0FCEB7D1CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DECC8487-8B84-4F23-9199-4D0FCEB7D1CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{674364E1-6F40-4F62-941B-917ABB4C2447}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{674364E1-6F40-4F62-941B-917ABB4C2447}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{674364E1-6F40-4F62-941B-917ABB4C2447}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{674364E1-6F40-4F62-941B-917ABB4C2447}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{61297776-527A-4F81-90A6-397996EE3F75} = {E0BA00B7-42BC-49BC-BB50-B058D3DDCD3C}
@@ -78,5 +84,6 @@ Global
 		{8880CD02-EFF4-4E23-B653-2ED944CEF5E1} = {DB5AB717-2339-4AFB-8B31-5E6778F6AA56}
 		{98997D1F-D217-4EDD-974D-F376F876CEB5} = {DB5AB717-2339-4AFB-8B31-5E6778F6AA56}
 		{DECC8487-8B84-4F23-9199-4D0FCEB7D1CD} = {DB5AB717-2339-4AFB-8B31-5E6778F6AA56}
+		{674364E1-6F40-4F62-941B-917ABB4C2447} = {DB5AB717-2339-4AFB-8B31-5E6778F6AA56}
 	EndGlobalSection
 EndGlobal

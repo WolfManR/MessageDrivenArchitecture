@@ -13,6 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Restaurant.MassTransit\Restaurant.MassTransit.csproj" />
       <ProjectReference Include="..\Restaurant.Messages\Restaurant.Messages.csproj" />
     </ItemGroup>
 
