@@ -28,13 +28,13 @@ public class NotifyConsumer : IConsumer<INotify>
 
         if (model is not null && model.CheckMessageId(messageId))
         {
-            _logger.LogInformation("Notification Second time {Message}", messageId);
+            _logger.LogDebug("Notification Second time {Message}", messageId);
             return context.ConsumeCompleted;
         }
             
         var requestModel = new Notify(context.Message, messageId);
 
-        _logger.LogInformation("Notification First time {Message}", messageId);
+        _logger.LogDebug("Notification First time {Message}", messageId);
         var resultModel = model?.Update(requestModel, messageId) ?? requestModel;
         
         _repository.AddOrUpdate(resultModel);

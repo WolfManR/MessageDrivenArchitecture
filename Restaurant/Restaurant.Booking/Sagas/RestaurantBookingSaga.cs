@@ -93,7 +93,7 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
             When(BookingExpired.Received)
                 // TODO: Ignore events
                 .Then(context => 
-                    _logger.LogInformation(
+                    _logger.LogWarning(
                         "Отмена заказа {Order}, слишком долго исполнялся",
                         context.Saga.OrderId))
                 .Publish(context => (IBookingCancellation)
