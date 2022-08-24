@@ -1,6 +1,7 @@
 using MassTransit;
 using MassTransit.Audit;
 using Microsoft.AspNetCore.Mvc;
+using Prometheus;
 using Restaurant.Booking;
 using Restaurant.Booking.Consumers;
 using Restaurant.Booking.Sagas;
@@ -59,6 +60,8 @@ builder.Services.AddMassTransit(x =>
 
         cfg.ConnectSendAuditObservers(auditStore);
         cfg.ConnectConsumeAuditObserver(auditStore);
+        
+        cfg.UsePrometheusMetrics(serviceName: "restaurant_booking");
     });
 });
 
@@ -80,5 +83,7 @@ app.MapPost("/Book", static async (int countOfPersons, Dish? dish, [FromServices
 });
 
 app.MapPost("/Free/{orderId}", static (Guid orderId, Manager manager) => Results.Problem("Not released feature"));
+
+app.MapMetrics();
 
 app.Run();

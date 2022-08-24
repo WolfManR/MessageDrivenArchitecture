@@ -1,5 +1,6 @@
 using MassTransit;
 using MassTransit.Audit;
+using Prometheus;
 using Restaurant.Kitchen;
 using Restaurant.Kitchen.Consumers;
 using Restaurant.MassTransit;
@@ -43,6 +44,8 @@ builder.Services.AddMassTransit(x =>
         
         cfg.ConnectSendAuditObservers(auditStore);
         cfg.ConnectConsumeAuditObserver(auditStore);
+        
+        cfg.UsePrometheusMetrics(serviceName: "restaurant_kitchen");
     });
 });
 
@@ -51,5 +54,7 @@ var app = builder.Build();
 app.UseSwagger().UseSwaggerUI();
 
 app.MapPost("order", (Dish dish) => Results.Problem("Not released feature"));
+
+app.MapMetrics();
 
 app.Run();

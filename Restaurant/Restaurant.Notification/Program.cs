@@ -1,5 +1,6 @@
 using MassTransit;
 using MassTransit.Audit;
+using Prometheus;
 using Restaurant.MassTransit;
 using Restaurant.Messages;
 using Restaurant.Notification;
@@ -47,11 +48,15 @@ builder.Services.AddMassTransit(x =>
         
         cfg.ConnectSendAuditObservers(auditStore);
         cfg.ConnectConsumeAuditObserver(auditStore);
+        
+        cfg.UsePrometheusMetrics(serviceName: "restaurant_notification");
     });
 });
 
 var app = builder.Build();
 
 app.UseSwagger().UseSwaggerUI();
+
+app.MapMetrics();
 
 app.Run();
