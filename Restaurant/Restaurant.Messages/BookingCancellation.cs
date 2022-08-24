@@ -6,7 +6,7 @@ public interface IBookingCancellation
     int? TableId { get; }
 }
 
-public class BookingCancellation : IBookingCancellation
+public class BookingCancellation : TransactionalData<BookingCancellation, IBookingCancellation>, IBookingCancellation
 {
     public BookingCancellation(Guid orderId, int? tableId)
     {
@@ -14,6 +14,16 @@ public class BookingCancellation : IBookingCancellation
         TableId = tableId;
     }
 
-    public Guid OrderId { get; }
-    public int? TableId { get; }
+    public BookingCancellation(IBookingCancellation data, string messageId) : base(data, messageId)
+    {
+    }
+
+    protected override void SetData(IBookingCancellation data)
+    {
+        OrderId = data.OrderId;
+        TableId = data.TableId;
+    }
+
+    public Guid OrderId { get; private set; }
+    public int? TableId { get; private set; }
 }

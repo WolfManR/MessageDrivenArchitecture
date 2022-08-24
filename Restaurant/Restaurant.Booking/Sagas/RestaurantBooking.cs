@@ -21,6 +21,9 @@ public class RestaurantBooking : SagaStateMachineInstance
         
     // пометка о том, что наша заявка просрочена
     public Guid? ExpirationId { get; set; }
+
+    // пометка о том, что гость собирается прийти
+    public Guid? GuestIncomeId { get; set; }
     
     public int IncomeTime { get; set; }
     public int? TableId { get; set; }
