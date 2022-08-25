@@ -14,20 +14,25 @@ public class BookingRequestSagaTests : IAsyncLifetime
     {
         _writer = new TestWriter(output);
         _provider = new ServiceCollection()
-            .AddMassTransitTestHarness(cfg =>
+            .AddMassTransitTestHarness(x =>
             {
-                cfg.AddConsumer<PreorderDishConsumer>();
-                cfg.AddConsumer<RestaurantBookingRequestConsumer>();
+                x.AddConsumer<PreorderDishConsumer>();
+                x.AddConsumer<RestaurantBookingRequestConsumer>();
                 
-                cfg.AddSagaStateMachine<RestaurantBookingSaga, RestaurantBooking>()
+                x.AddSagaStateMachine<RestaurantBookingSaga, RestaurantBooking>()
                     .InMemoryRepository();
-                cfg.AddDelayedMessageScheduler();
+                x.AddPublishMessageScheduler();
+                x.UsingInMemory((context, cfg) =>
+                {
+                    cfg.UseInMemoryScheduler();
+                    cfg.ConfigureEndpoints(context);
+                });
             })
             .AddLogging()
             .AddTransient<Hall>()
             .AddTransient<Chef>()
             .AddTransient<Manager>()
-            .AddSingleton<IRepository<BookingRequest>, InMemoryRepository<BookingRequest>>()
+            .AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>))
             .BuildServiceProvider(true);
 
         _harness = _provider.GetTestHarness();
@@ -45,7 +50,7 @@ public class BookingRequestSagaTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Test()
+    public async Task SagaSucceed()
     {
         var orderId = NewId.NextGuid();
         var clientId = NewId.NextGuid();
@@ -61,8 +66,7 @@ public class BookingRequestSagaTests : IAsyncLifetime
         Assert.True(await _harness.Published.Any<IBookingRequest>());
         Assert.True(await _harness.Consumed.Any<IBookingRequest>());
 
-        var sagaHarness = _provider
-            .GetRequiredService<ISagaStateMachineTestHarness<RestaurantBookingSaga, RestaurantBooking>>();
+        var sagaHarness = _harness.GetSagaStateMachineHarness<RestaurantBookingSaga, RestaurantBooking>();
 
         Assert.True(await sagaHarness.Consumed.Any<IBookingRequest>());
         Assert.True(await sagaHarness.Created.Any(x => x.CorrelationId == orderId));
@@ -73,8 +77,7 @@ public class BookingRequestSagaTests : IAsyncLifetime
         Assert.Equal(saga.ClientId, clientId);
         Assert.True(await _harness.Published.Any<ITableBooked>());
         Assert.True(await _harness.Published.Any<IDishReady>());
-        // BookingExpire block
-        // Assert.True(await _harness.Published.Any<INotify>());
+        Assert.True(await _harness.Published.Any<INotify>());
         Assert.Equal(3, saga.CurrentState);
     }
 }
