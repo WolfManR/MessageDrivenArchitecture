@@ -1,10 +1,3 @@
-using MassTransit;
-using MassTransit.Testing;
-using Microsoft.Extensions.DependencyInjection;
-using Restaurant.Booking.Consumers;
-using Restaurant.Messages;
-using Xunit.Abstractions;
-
 namespace Restaurant.Booking.Tests;
 
 public class BookingRequestConsumerTests : IAsyncLifetime
@@ -16,38 +9,35 @@ public class BookingRequestConsumerTests : IAsyncLifetime
     public BookingRequestConsumerTests(ITestOutputHelper output)
     {
         _writer = new TestWriter(output);
-        _provider = new ServiceCollection()                                                              
-            .AddMassTransitTestHarness(cfg =>                                                            
-            {                                                                                            
-                cfg.AddConsumer<RestaurantBookingRequestConsumer>();                                     
-            })                                                                                           
-            .AddLogging()                                                                                
-            .AddTransient<Hall>()                                                                        
-            .AddTransient<Manager>()                                                                     
-            .AddSingleton<IRepository<BookingRequest>, InMemoryRepository<BookingRequest>>()             
-            .BuildServiceProvider(true);                                                                 
-                                                                                                 
+        _provider = new ServiceCollection()
+            .AddMassTransitTestHarness(cfg => { cfg.AddConsumer<RestaurantBookingRequestConsumer>(); })
+            .AddLogging()
+            .AddTransient<Hall>()
+            .AddTransient<Manager>()
+            .AddSingleton<IRepository<BookingRequest>, InMemoryRepository<BookingRequest>>()
+            .BuildServiceProvider(true);
+
         _harness = _provider.GetTestHarness();
     }
-    
+
     public async Task InitializeAsync()
     {
-        await _harness.Start();                                                                         
+        await _harness.Start();
     }
 
     public async Task DisposeAsync()
     {
         await _harness.OutputTimeline(_writer, options => options.Now().IncludeAddress());
-        await _provider.DisposeAsync(); 
+        await _provider.DisposeAsync();
     }
 
     [Fact]
     public async Task ConsumeRequest()
     {
         var orderId = Guid.NewGuid();
-        
+
         await _harness.Bus.Publish(
-            (IBookingRequest) new BookingRequest(
+            (IBookingRequest)new BookingRequest(
                 orderId,
                 Guid.NewGuid(),
                 Dish.Pasta,
@@ -62,10 +52,10 @@ public class BookingRequestConsumerTests : IAsyncLifetime
     public async Task PublishTableBookedOnConsume()
     {
         var consumer = _harness.GetConsumerHarness<RestaurantBookingRequestConsumer>();
-        
+
         var orderId = NewId.NextGuid();
         var bus = _harness.Bus;
-        
+
         await bus.Publish((IBookingRequest)
             new BookingRequest(
                 orderId,
@@ -76,7 +66,7 @@ public class BookingRequestConsumerTests : IAsyncLifetime
                 1));
 
         Assert.Contains(consumer.Consumed.Select<IBookingRequest>(), x => x.Context.Message.OrderId == orderId);
-        
+
         Assert.Contains(_harness.Published.Select<ITableBooked>(), x => x.Context.Message.OrderId == orderId);
     }
 }
