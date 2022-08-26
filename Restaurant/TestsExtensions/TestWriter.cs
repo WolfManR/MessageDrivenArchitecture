@@ -1,6 +1,7 @@
 ﻿using System.Text;
+using Xunit.Abstractions;
 
-namespace Restaurant.Booking.Tests;
+namespace TestsExtensions;
 
 public class TestWriter : TextWriter
 {
