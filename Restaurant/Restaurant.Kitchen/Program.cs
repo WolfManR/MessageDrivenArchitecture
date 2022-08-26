@@ -1,11 +1,19 @@
 using MassTransit;
+using MassTransit.Audit;
+using Prometheus;
 using Restaurant.Kitchen;
 using Restaurant.Kitchen.Consumers;
+using Restaurant.MassTransit;
 using Restaurant.Messages;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer().AddSwaggerGen();
+
+builder.Services
+    .AddSingleton<Chef>()
+    .AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>))
+    .AddSingleton<IMessageAuditStore, LoggingAuditStore>();
 
 builder.Services.AddMassTransit(x =>
 {
@@ -24,22 +32,29 @@ builder.Services.AddMassTransit(x =>
 
     x.AddDelayedMessageScheduler();
 
+    // Bad practice and useless
+    var serviceProvider = builder.Services.BuildServiceProvider();
+    var auditStore = serviceProvider.GetService<IMessageAuditStore>();
+    
     x.UsingRabbitMq((context, cfg) =>
     {
         cfg.UseDelayedMessageScheduler();
         cfg.UseInMemoryOutbox();
         cfg.ConfigureEndpoints(context);
+        
+        cfg.ConnectSendAuditObservers(auditStore);
+        cfg.ConnectConsumeAuditObserver(auditStore);
+        
+        cfg.UsePrometheusMetrics(serviceName: "restaurant_kitchen");
     });
 });
-
-builder.Services
-    .AddSingleton<Chef>()
-    .AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
 
 var app = builder.Build();
 
 app.UseSwagger().UseSwaggerUI();
 
 app.MapPost("order", (Dish dish) => Results.Problem("Not released feature"));
+
+app.MapMetrics();
 
 app.Run();

@@ -37,7 +37,7 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
         Schedule(() => BookingExpired,
             x => x.ExpirationId, x =>
             {
-                x.Delay = TimeSpan.FromSeconds(7);
+                x.Delay = TimeSpan.FromSeconds(30);
                 x.Received = e => e.CorrelateById(context => context.Message.OrderId);
             });
 
@@ -59,9 +59,7 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
                     
                     _logger.LogInformation("Saga: {CreationDate}", context.Message.CreationDate);
                 })
-                .Schedule(BookingExpired,
-                    context => new BookingExpire(context.Saga),
-                    context => TimeSpan.FromSeconds(30))
+                .Schedule(BookingExpired, context => new BookingExpire(context.Saga))
                 .TransitionTo(AwaitingBookingApproved)
         );
 
@@ -93,7 +91,7 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
             When(BookingExpired.Received)
                 // TODO: Ignore events
                 .Then(context => 
-                    _logger.LogInformation(
+                    _logger.LogWarning(
                         "Отмена заказа {Order}, слишком долго исполнялся",
                         context.Saga.OrderId))
                 .Publish(context => (IBookingCancellation)

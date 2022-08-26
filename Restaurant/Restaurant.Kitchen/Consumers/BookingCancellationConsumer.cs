@@ -25,13 +25,13 @@ public class BookingCancellationConsumer : IConsumer<IBookingCancellation>
 
         if (model is not null && model.CheckMessageId(messageId))
         {
-            _logger.LogInformation("Cancellation Second time {Message}", messageId);
+            _logger.LogDebug("Cancellation Second time {Message}", messageId);
             return context.ConsumeCompleted;
         }
             
         var requestModel = new BookingCancellation(context.Message, messageId);
 
-        _logger.LogInformation("Cancellation First time {Message}", messageId);
+        _logger.LogDebug("Cancellation First time {Message}", messageId);
         var resultModel = model?.Update(requestModel, messageId) ?? requestModel;
         
         _repository.AddOrUpdate(resultModel);
