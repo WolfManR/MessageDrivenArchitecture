@@ -34,6 +34,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restaurant.Kitchen.Tests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsExtensions", "Restaurant\TestsExtensions\TestsExtensions.csproj", "{E19A2D3C-256C-469B-AE81-FA2ABA2EFC39}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Restaurant.Notification.Tests", "Restaurant\Restaurant.Notification.Tests\Restaurant.Notification.Tests.csproj", "{E85AB9B4-3283-4ADE-8F7F-8177A3A2F521}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -96,6 +98,10 @@ Global
 		{E19A2D3C-256C-469B-AE81-FA2ABA2EFC39}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E19A2D3C-256C-469B-AE81-FA2ABA2EFC39}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E19A2D3C-256C-469B-AE81-FA2ABA2EFC39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E85AB9B4-3283-4ADE-8F7F-8177A3A2F521}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E85AB9B4-3283-4ADE-8F7F-8177A3A2F521}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E85AB9B4-3283-4ADE-8F7F-8177A3A2F521}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E85AB9B4-3283-4ADE-8F7F-8177A3A2F521}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{61297776-527A-4F81-90A6-397996EE3F75} = {E0BA00B7-42BC-49BC-BB50-B058D3DDCD3C}
@@ -109,5 +115,6 @@ Global
 		{EC595166-2B0B-4A76-9D70-7256779298D9} = {ADE02B1B-4B31-489E-8731-F1600BB491AA}
 		{58DFE90F-E37E-4C2D-A5F4-C7B04365B051} = {ADE02B1B-4B31-489E-8731-F1600BB491AA}
 		{E19A2D3C-256C-469B-AE81-FA2ABA2EFC39} = {ADE02B1B-4B31-489E-8731-F1600BB491AA}
+		{E85AB9B4-3283-4ADE-8F7F-8177A3A2F521} = {ADE02B1B-4B31-489E-8731-F1600BB491AA}
 	EndGlobalSection
 EndGlobal
