@@ -22,7 +22,7 @@
     </ItemGroup>
     
     <ItemGroup>
-        <ProjectReference Include="..\Restaurant.Notification\Restaurant.Notification.csproj" />
+        <ProjectReference Include="..\..\src\Restaurant.Notification\Restaurant.Notification.csproj" />
         <ProjectReference Include="..\TestsExtensions\TestsExtensions.csproj" />
     </ItemGroup>
 
