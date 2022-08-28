@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: root
+    ports:
+    - 5432:5432
+    volumes:
+    - ./pgdata:/var/lib/postgresql/data
+
+  rabbit:
+    image: masstransit/rabbitmq
+    ports:
+      - 15672:15672
+      - 5672:5672
+
+volumes:
+  pgdata:
+    driver: local
+
+# docker inner localhost - host.docker.internal
