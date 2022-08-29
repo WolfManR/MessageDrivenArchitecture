@@ -23,7 +23,7 @@ builder.Services.AddMassTransit(x =>
             cfg.UseScheduledRedelivery(r => r.Incremental(3, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10)));
         })
         .Endpoint(e => e.Temporary = true);
-    x.AddConsumer<PreorderDishConsumer>(cfg =>
+    x.AddConsumer<DishOrderConsumer>(cfg =>
         {
             cfg.UseMessageRetry(r => r.Incremental(3, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(2)));
             cfg.UseScheduledRedelivery(r => r.Incremental(3, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10)));

@@ -16,7 +16,7 @@ public class BookingRequestSagaTests : IAsyncLifetime
         _provider = new ServiceCollection()
             .AddMassTransitTestHarness(x =>
             {
-                x.AddConsumer<PreorderDishConsumer>();
+                x.AddConsumer<DishOrderConsumer>();
                 x.AddConsumer<RestaurantBookingRequestConsumer>();
                 
                 x.AddSagaStateMachine<RestaurantBookingSaga, RestaurantBooking>()

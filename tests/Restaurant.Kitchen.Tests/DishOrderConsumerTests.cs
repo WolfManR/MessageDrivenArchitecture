@@ -1,19 +1,19 @@
 ﻿namespace Restaurant.Kitchen.Tests;
 
-public class PreorderDishConsumerTests : IAsyncLifetime
+public class DishOrderConsumerTests : IAsyncLifetime
 {
     private readonly ServiceProvider _provider;
     private readonly ITestHarness _harness;
     private readonly TestWriter _writer;
 
-    public PreorderDishConsumerTests(ITestOutputHelper output)
+    public DishOrderConsumerTests(ITestOutputHelper output)
     {
         _writer = new TestWriter(output);
         _provider = new ServiceCollection()
-            .AddMassTransitTestHarness(cfg => { cfg.AddConsumer<PreorderDishConsumer>(); })
+            .AddMassTransitTestHarness(cfg => { cfg.AddConsumer<DishOrderConsumer>(); })
             .AddLogging()
             .AddTransient<Chef>()
-            .AddSingleton<IRepository<BookingRequest>, InMemoryRepository<BookingRequest>>()
+            .AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>))
             .BuildServiceProvider(true);
 
         _harness = _provider.GetTestHarness();
@@ -35,34 +35,19 @@ public class PreorderDishConsumerTests : IAsyncLifetime
     {
         var orderId = Guid.NewGuid();
 
-        await _harness.Bus.Publish(
-            (IBookingRequest)new BookingRequest(
-                orderId,
-                Guid.NewGuid(),
-                Dish.Pasta,
-                DateTime.Now,
-                3,
-                1));
+        await _harness.Bus.Publish((IDishOrder)new DishOrder(orderId, Dish.Pasta));
 
-        Assert.True(await _harness.Consumed.Any<IBookingRequest>());
+        Assert.True(await _harness.Consumed.Any<IDishOrder>());
     }
     
     [Fact]
     public async Task PublishDishReadyOnConsume()
     {
         var orderId = NewId.NextGuid();
-        var bus = _harness.Bus;
+        
+        await _harness.Bus.Publish((IDishOrder)new DishOrder(orderId, Dish.Pasta));
 
-        await bus.Publish((IBookingRequest)
-            new BookingRequest(
-                orderId,
-                Guid.NewGuid(),
-                Dish.Pasta,
-                DateTime.Now,
-                3,
-                1));
-
-        Assert.Contains(_harness.Consumed.Select<IBookingRequest>(), x => x.Context.Message.OrderId == orderId);
+        Assert.Contains(_harness.Consumed.Select<IDishOrder>(), x => x.Context.Message.OrderId == orderId);
 
         Assert.Contains(_harness.Published.Select<IDishReady>(), x => x.Context.Message.OrderId == orderId);
     }
