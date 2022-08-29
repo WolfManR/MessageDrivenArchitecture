@@ -1,20 +1,20 @@
 ﻿namespace Restaurant.Messages;
 
-public interface IDishOrdered
+public interface IDishOrder
 {
     public Guid OrderId { get; }
         
-    public Dish Dish { get; }
+    public Dish? Dish { get; }
 }
 
-public class DishOrdered : IDishOrdered
+public class DishOrder : IDishOrder
 {
-    public DishOrdered(Guid orderId, Dish dish)
+    public DishOrder(Guid orderId, Dish? dish)
     {
         OrderId = orderId;
         Dish = dish;
     }
 
     public Guid OrderId { get; }
-    public Dish Dish { get; }
+    public Dish? Dish { get; }
 }

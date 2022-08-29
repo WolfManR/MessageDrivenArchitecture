@@ -44,6 +44,9 @@ builder.Services.AddMassTransit(x =>
     x.AddSagaStateMachine<RestaurantBookingSaga, RestaurantBooking>()
         .Endpoint(e => e.Temporary = true)
         .InMemoryRepository();
+    x.AddSagaStateMachine<GuestAwaitingSaga, GuestAwaitingSagaState>()
+        .Endpoint(e => e.Temporary = true)
+        .InMemoryRepository();
 
     x.AddDelayedMessageScheduler();
 

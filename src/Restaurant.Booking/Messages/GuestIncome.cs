@@ -13,7 +13,7 @@ public class GuestIncome : IGuestIncome
     public Guid OrderId { get; }
     public Guid ClientId { get; }
 
-    public GuestIncome(RestaurantBooking instance)
+    public GuestIncome(GuestAwaitingSagaState instance)
     {
         OrderId = instance.OrderId;
         ClientId = instance.ClientId;
