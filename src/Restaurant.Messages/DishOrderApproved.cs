@@ -1,6 +1,3 @@
 ﻿namespace Restaurant.Messages;
 
-public record DishOrderApproved
-{
-    public Guid OrderId { get; set; }
-}
+public record DishOrderApproved(Guid OrderId);
