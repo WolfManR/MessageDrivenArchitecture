@@ -75,13 +75,13 @@ app.UseSwagger().UseSwaggerUI();
 app.MapPost("/Book", static async (int countOfPersons, Dish? dish, [FromServices] Manager manager, [FromServices] IBus messageBus) =>
 {
     BookingRequest order = new(
-        orderId: NewId.NextGuid(),
-        clientId: NewId.NextSequentialGuid(),
-        preOrder: dish,
-        creationDate: DateTime.UtcNow,
-        incomeTime: Random.Shared.Next(7, 15),
-        countOfPersons: countOfPersons);
-    await messageBus.Publish<IBookingRequest>(order);
+        OrderId: NewId.NextGuid(),
+        ClientId: NewId.NextSequentialGuid(),
+        PreOrder: dish,
+        CreationDate: DateTime.UtcNow,
+        IncomeTime: Random.Shared.Next(7, 15),
+        CountOfPersons: countOfPersons);
+    await messageBus.Publish(order);
     return Results.Ok(order.OrderId);
 });
 

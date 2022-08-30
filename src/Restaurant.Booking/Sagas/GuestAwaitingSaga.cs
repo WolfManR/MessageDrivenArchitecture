@@ -25,7 +25,7 @@ public class GuestAwaitingSaga : MassTransitStateMachine<GuestAwaitingSagaState>
                     context => new GuestIncome(context.Saga),
                     context => TimeSpan.FromSeconds(context.Saga.IncomeTime))
                 .Publish(context =>
-                    (INotify)new Notify(context.Saga.OrderId,
+                    (Notify)new Notify(context.Saga.OrderId,
                         context.Saga.ClientId,
                         "Ожидание гостя"))
                 .TransitionTo(AwaitingGuest));
@@ -33,14 +33,14 @@ public class GuestAwaitingSaga : MassTransitStateMachine<GuestAwaitingSagaState>
         During(AwaitingGuest,
             When(GuestIncome.Received)
                 .Publish(context =>
-                    (INotify)new Notify(context.Saga.OrderId,
+                    (Notify)new Notify(context.Saga.OrderId,
                         context.Saga.ClientId,
                         "Гость прибыл"))
                 .Finalize());
 
         DuringAny(
             When(BookingCancellationRequested)
-                .Publish(context => (IBookingCancellation)
+                .Publish(context => (BookingCancellation)
                     new BookingCancellation(context.Message.OrderId, context.Saga.TableId))
                 .Finalize());
 

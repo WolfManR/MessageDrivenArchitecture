@@ -38,9 +38,9 @@ public class BookingCancellationConsumerTests : IAsyncLifetime
     {
         var orderId = Guid.NewGuid();
 
-        await _harness.Bus.Publish((IBookingCancellation)new BookingCancellation(orderId, 1));
+        await _harness.Bus.Publish(new BookingCancellation(orderId, 1));
 
-        Assert.True(await _harness.Consumed.Any<IBookingCancellation>());
+        Assert.True(await _harness.Consumed.Any<BookingCancellation>());
     }
 
     [Fact]
@@ -51,9 +51,9 @@ public class BookingCancellationConsumerTests : IAsyncLifetime
         table!.Set(TableState.Booked);
         var tableId = table.Id;
         
-        await _harness.Bus.Publish((IBookingCancellation)new BookingCancellation(orderId, tableId));
+        await _harness.Bus.Publish(new BookingCancellation(orderId, tableId));
 
-        Assert.True(await _harness.Consumed.Any<IBookingCancellation>());
+        Assert.True(await _harness.Consumed.Any<BookingCancellation>());
         Assert.Equal(TableState.Free, table.State);
     }
 }

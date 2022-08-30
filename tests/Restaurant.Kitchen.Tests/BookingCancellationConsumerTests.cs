@@ -34,8 +34,8 @@ public class BookingCancellationConsumerTests : IAsyncLifetime
     {
         var orderId = Guid.NewGuid();
 
-        await _harness.Bus.Publish((IBookingCancellation)new BookingCancellation(orderId, 1));
+        await _harness.Bus.Publish(new BookingCancellation(orderId, 1));
 
-        Assert.True(await _harness.Consumed.Any<IBookingCancellation>());
+        Assert.True(await _harness.Consumed.Any<BookingCancellation>());
     }
 }

@@ -3,27 +3,25 @@ using Restaurant.Messages;
 
 namespace Restaurant.Kitchen.Consumers;
 
-public class DishOrderConsumer : IConsumer<IDishOrder>
+public class DishOrderConsumer : IConsumer<DishOrder>
 {
     private readonly Chef _chef;
-    private readonly IRepository<DishOrder> _repository;
     private readonly ILogger<DishOrderConsumer> _logger;
 
-    public DishOrderConsumer(Chef chef, IRepository<DishOrder> repository, ILogger<DishOrderConsumer> logger)
+    public DishOrderConsumer(Chef chef,  ILogger<DishOrderConsumer> logger)
     {
         _chef = chef;
-        _repository = repository;
         _logger = logger;
     }
     
-    public async Task Consume(ConsumeContext<IDishOrder> context)
+    public async Task Consume(ConsumeContext<DishOrder> context)
     {
         var orderId = context.Message.OrderId;
         var dish = context.Message.Dish;
 
         if (dish is Dish.Lasagna) throw new Exception("There can not be any Lasanga");
         
-        await context.Publish<DishOrderApproved>(new DishOrderApproved() { OrderId = orderId });
+        await context.Publish(new DishOrderApproved(orderId));
         
         // TODO: Might be handled on kitchen
         if(dish is null) return;
@@ -36,6 +34,6 @@ public class DishOrderConsumer : IConsumer<IDishOrder>
             await Task.Delay(300);
         }
 
-        await context.Publish<IDishReady>(new DishReady(orderId));
+        await context.Publish(new DishReady(orderId));
     }
 }

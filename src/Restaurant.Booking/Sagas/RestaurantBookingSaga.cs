@@ -43,7 +43,7 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
 
                     _logger.LogInformation("Saga: {CreationDate}", context.Message.CreationDate);
                 })
-                .Publish(context => (IDishOrder)new DishOrder(
+                .Publish(context => new DishOrder(
                     context.Message.OrderId,
                     context.Message.PreOrder))
                 .Schedule(BookingExpired, context => new BookingExpire(context.Saga))
@@ -54,11 +54,10 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
             When(TableBooked)
                 .Then(context => context.Saga.TableId = context.Message.TableId),
             When(DishOrderApproved)
-                .Publish(context =>
-                    (INotify)new Notify(
-                        context.Saga.OrderId,
-                        context.Saga.ClientId,
-                        "К вашему приходу блюдо будет готово")));
+                .Publish(context => new Notify(
+                    context.Saga.OrderId,
+                    context.Saga.ClientId,
+                    "К вашему приходу блюдо будет готово")));
 
         CompositeEvent(() => BookingApproved, x => x.ReadyEventStatus, TableBooked, DishOrderApproved);
 
@@ -66,7 +65,7 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
             When(BookingApproved)
                 .Unschedule(BookingExpired)
                 .Publish(context =>
-                    (INotify)new Notify(context.Saga.OrderId,
+                    new Notify(context.Saga.OrderId,
                         context.Saga.ClientId,
                         "Стол успешно забронирован"))
                 .Publish(context => new GuestAwaitingRequest(
@@ -78,24 +77,21 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
             When(BookingRequestFault)
                 .Unschedule(BookingExpired)
                 .Then(context => _logger.LogError("Ошибочка вышла! Заказ отменяется {Order}", context.Saga.OrderId))
-                .Publish(context => (INotify)new Notify(
+                .Publish(context => new Notify(
                     context.Saga.OrderId,
                     context.Saga.ClientId,
                     "Приносим извинения, стол забронировать не получилось."))
-                .Publish(context => (IBookingCancellation)
-                    new BookingCancellation(context.Message.Message.OrderId, context.Saga.TableId))
+                .Publish(context => new BookingCancellation(context.Message.Message.OrderId, context.Saga.TableId))
                 .Finalize(),
             When(BookingExpired.Received)
                 .Then(context =>
                     _logger.LogWarning(
                         "Отмена заказа {Order}, слишком долго исполнялся",
                         context.Saga.OrderId))
-                .Publish(context => (IBookingCancellation)
-                    new BookingCancellation(context.Message.OrderId, context.Saga.TableId))
+                .Publish(context => new BookingCancellation(context.Message.OrderId, context.Saga.TableId))
                 .Finalize(),
             When(BookingCancellationRequested)
-                .Publish(context => (IBookingCancellation)
-                    new BookingCancellation(context.Message.OrderId, context.Saga.TableId))
+                .Publish(context => new BookingCancellation(context.Message.OrderId, context.Saga.TableId))
                 .Finalize());
 
         SetCompletedWhenFinalized();
@@ -104,11 +100,11 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
     public State AwaitingBookingApproved { get; private set; }
     public Event BookingApproved { get; private set; }
 
-    public Event<IBookingRequest> BookingRequested { get; private set; }
-    public Event<ITableBooked> TableBooked { get; private set; }
+    public Event<BookingRequest> BookingRequested { get; private set; }
+    public Event<TableBooked> TableBooked { get; private set; }
     public Event<DishOrderApproved> DishOrderApproved { get; private set; }
 
-    public Event<Fault<IBookingRequest>> BookingRequestFault { get; private set; }
+    public Event<Fault<BookingRequest>> BookingRequestFault { get; private set; }
     public Event<ClientBookingCancellation> BookingCancellationRequested { get; set; }
 
     public Schedule<RestaurantBooking, IBookingExpire> BookingExpired { get; private set; }

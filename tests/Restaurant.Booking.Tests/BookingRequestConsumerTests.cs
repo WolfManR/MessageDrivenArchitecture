@@ -36,8 +36,7 @@ public class BookingRequestConsumerTests : IAsyncLifetime
     {
         var orderId = Guid.NewGuid();
 
-        await _harness.Bus.Publish(
-            (IBookingRequest)new BookingRequest(
+        await _harness.Bus.Publish(new BookingRequest(
                 orderId,
                 Guid.NewGuid(),
                 Dish.Pasta,
@@ -45,7 +44,7 @@ public class BookingRequestConsumerTests : IAsyncLifetime
                 3,
                 1));
 
-        Assert.True(await _harness.Consumed.Any<IBookingRequest>());
+        Assert.True(await _harness.Consumed.Any<BookingRequest>());
     }
 
     [Fact]
@@ -56,8 +55,7 @@ public class BookingRequestConsumerTests : IAsyncLifetime
         var orderId = NewId.NextGuid();
         var bus = _harness.Bus;
 
-        await bus.Publish((IBookingRequest)
-            new BookingRequest(
+        await bus.Publish(new BookingRequest(
                 orderId,
                 Guid.NewGuid(),
                 Dish.Pasta,
@@ -65,8 +63,8 @@ public class BookingRequestConsumerTests : IAsyncLifetime
                 3,
                 1));
 
-        Assert.Contains(consumer.Consumed.Select<IBookingRequest>(), x => x.Context.Message.OrderId == orderId);
+        Assert.Contains(consumer.Consumed.Select<BookingRequest>(), x => x.Context.Message.OrderId == orderId);
 
-        Assert.Contains(_harness.Published.Select<ITableBooked>(), x => x.Context.Message.OrderId == orderId);
+        Assert.Contains(_harness.Published.Select<TableBooked>(), x => x.Context.Message.OrderId == orderId);
     }
 }

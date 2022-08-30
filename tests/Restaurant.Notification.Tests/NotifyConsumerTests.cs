@@ -35,12 +35,8 @@ public class NotifyConsumerTests : IAsyncLifetime
     {
         var orderId = Guid.NewGuid();
 
-        await _harness.Bus.Publish(
-            (INotify)new Notify(
-                orderId,
-                Guid.NewGuid(),
-                "Hello World"));
+        await _harness.Bus.Publish(new Notify(orderId, Guid.NewGuid(), "Hello World"));
 
-        Assert.True(await _harness.Consumed.Any<INotify>());
+        Assert.True(await _harness.Consumed.Any<Notify>());
     }
 }

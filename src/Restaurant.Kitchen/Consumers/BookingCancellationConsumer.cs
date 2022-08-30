@@ -3,39 +3,18 @@ using Restaurant.Messages;
 
 namespace Restaurant.Kitchen.Consumers;
 
-public class BookingCancellationConsumer : IConsumer<IBookingCancellation>
+public class BookingCancellationConsumer : IConsumer<BookingCancellation>
 {
     private readonly ILogger<BookingCancellationConsumer> _logger;
-    private readonly IRepository<BookingCancellation> _repository;
 
     public BookingCancellationConsumer(
-        ILogger<BookingCancellationConsumer> logger,
-        IRepository<BookingCancellation> repository)
+        ILogger<BookingCancellationConsumer> logger)
     {
         _logger = logger;
-        _repository = repository;
     }
     
-    public Task Consume(ConsumeContext<IBookingCancellation> context)
+    public Task Consume(ConsumeContext<BookingCancellation> context)
     {
-        var orderId = context.Message.OrderId;
-        var messageId = context.MessageId.ToString();
-
-        var model = _repository.Get().FirstOrDefault(i => i.OrderId == orderId);
-
-        if (model is not null && model.CheckMessageId(messageId))
-        {
-            _logger.LogDebug("Cancellation Second time {Message}", messageId);
-            return context.ConsumeCompleted;
-        }
-            
-        var requestModel = new BookingCancellation(context.Message, messageId);
-
-        _logger.LogDebug("Cancellation First time {Message}", messageId);
-        var resultModel = model?.Update(requestModel, messageId) ?? requestModel;
-        
-        _repository.AddOrUpdate(resultModel);
-        
         _logger.LogInformation("[OrderId {Order}] Отмена готовки блюда", context.Message.OrderId);
         return context.ConsumeCompleted;
     }

@@ -3,7 +3,7 @@ using Restaurant.Messages;
 
 namespace Restaurant.Booking.Consumers;
 
-public class BookingRequestFaultConsumer : IConsumer<Fault<IBookingRequest>>
+public class BookingRequestFaultConsumer : IConsumer<Fault<BookingRequest>>
 {
     private readonly ILogger<BookingRequestFaultConsumer> _logger;
 
@@ -12,7 +12,7 @@ public class BookingRequestFaultConsumer : IConsumer<Fault<IBookingRequest>>
         _logger = logger;
     }
 
-    public Task Consume(ConsumeContext<Fault<IBookingRequest>> context)
+    public Task Consume(ConsumeContext<Fault<BookingRequest>> context)
     {
         _logger.LogWarning("[OrderId {Order}] Отмена в зале", context.Message.Message.OrderId);
         return Task.CompletedTask;

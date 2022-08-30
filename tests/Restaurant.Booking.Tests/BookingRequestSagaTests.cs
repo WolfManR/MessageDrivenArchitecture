@@ -63,21 +63,21 @@ public class BookingRequestSagaTests : IAsyncLifetime
             3,
             1));
         
-        Assert.True(await _harness.Published.Any<IBookingRequest>());
-        Assert.True(await _harness.Consumed.Any<IBookingRequest>());
+        Assert.True(await _harness.Published.Any<BookingRequest>());
+        Assert.True(await _harness.Consumed.Any<BookingRequest>());
 
         var sagaHarness = _harness.GetSagaStateMachineHarness<RestaurantBookingSaga, RestaurantBooking>();
 
-        Assert.True(await sagaHarness.Consumed.Any<IBookingRequest>());
+        Assert.True(await sagaHarness.Consumed.Any<BookingRequest>());
         Assert.True(await sagaHarness.Created.Any(x => x.CorrelationId == orderId));
 
         var saga = sagaHarness.Created.Contains(orderId);
 
         Assert.NotNull(saga);
         Assert.Equal(saga.ClientId, clientId);
-        Assert.True(await _harness.Published.Any<ITableBooked>());
-        Assert.True(await _harness.Published.Any<IDishReady>());
-        Assert.True(await _harness.Published.Any<INotify>());
+        Assert.True(await _harness.Published.Any<TableBooked>());
+        Assert.True(await _harness.Published.Any<DishReady>());
+        Assert.True(await _harness.Published.Any<Notify>());
         Assert.Equal(3, saga.CurrentState);
     }
 }
