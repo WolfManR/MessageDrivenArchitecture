@@ -18,8 +18,8 @@ builder.Services
     .AddSingleton(typeof(IRepository<>), typeof(InMemoryRepository<>));
 
 builder.Services
-    .AddTransient<RestaurantBooking>()
-    .AddTransient<RestaurantBookingSaga>()
+    .AddTransient<BookingSagaState>()
+    .AddTransient<BookingSaga>()
     .AddSingleton<IMessageAuditStore, LoggingAuditStore>();
 
 builder.Services.AddMassTransit(x =>
@@ -41,7 +41,7 @@ builder.Services.AddMassTransit(x =>
         cfg.UseScheduledRedelivery(r => r.Incremental(3, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10)));
     }).Endpoint(e => e.Temporary = true);
 
-    x.AddSagaStateMachine<RestaurantBookingSaga, RestaurantBooking>()
+    x.AddSagaStateMachine<BookingSaga, BookingSagaState>()
         .Endpoint(e => e.Temporary = true)
         .InMemoryRepository();
     x.AddSagaStateMachine<GuestAwaitingSaga, GuestAwaitingSagaState>()

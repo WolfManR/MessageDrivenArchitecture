@@ -1,14 +1,13 @@
 ﻿using MassTransit;
-using Restaurant.Booking.Messages;
 using Restaurant.Messages;
 
 namespace Restaurant.Booking.Sagas;
 
-public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBooking>
+public sealed class BookingSaga : MassTransitStateMachine<BookingSagaState>
 {
-    private readonly ILogger<RestaurantBookingSaga> _logger;
+    private readonly ILogger<BookingSaga> _logger;
 
-    public RestaurantBookingSaga(ILogger<RestaurantBookingSaga> logger)
+    public BookingSaga(ILogger<BookingSaga> logger)
     {
         _logger = logger;
 
@@ -46,7 +45,7 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
                 .Publish(context => new DishOrder(
                     context.Message.OrderId,
                     context.Message.PreOrder))
-                .Schedule(BookingExpired, context => new BookingExpire(context.Saga))
+                .Schedule(BookingExpired, context => new BookingExpire(context.Saga.OrderId))
                 .TransitionTo(AwaitingBookingApproved)
         );
 
@@ -88,7 +87,7 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
                     _logger.LogWarning(
                         "Отмена заказа {Order}, слишком долго исполнялся",
                         context.Saga.OrderId))
-                .Publish(context => new BookingCancellation(context.Message.OrderId, context.Saga.TableId))
+                .Publish(context => new BookingCancellation(context.Saga.OrderId, context.Saga.TableId))
                 .Finalize(),
             When(BookingCancellationRequested)
                 .Publish(context => new BookingCancellation(context.Message.OrderId, context.Saga.TableId))
@@ -107,5 +106,5 @@ public sealed class RestaurantBookingSaga : MassTransitStateMachine<RestaurantBo
     public Event<Fault<BookingRequest>> BookingRequestFault { get; private set; }
     public Event<ClientBookingCancellation> BookingCancellationRequested { get; set; }
 
-    public Schedule<RestaurantBooking, IBookingExpire> BookingExpired { get; private set; }
+    public Schedule<BookingSagaState, BookingExpire> BookingExpired { get; private set; }
 }

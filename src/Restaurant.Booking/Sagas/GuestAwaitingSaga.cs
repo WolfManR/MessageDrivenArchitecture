@@ -1,5 +1,4 @@
 ﻿using MassTransit;
-using Restaurant.Booking.Messages;
 using Restaurant.Messages;
 
 namespace Restaurant.Booking.Sagas;
@@ -22,12 +21,12 @@ public class GuestAwaitingSaga : MassTransitStateMachine<GuestAwaitingSagaState>
                     context.Saga.TableId = context.Message.TableId;
                 })
                 .Schedule(GuestIncome,
-                    context => new GuestIncome(context.Saga),
+                    context => new GuestIncome(context.Saga.OrderId),
                     context => TimeSpan.FromSeconds(context.Saga.IncomeTime))
-                .Publish(context =>
-                    (Notify)new Notify(context.Saga.OrderId,
-                        context.Saga.ClientId,
-                        "Ожидание гостя"))
+                .Publish(context => new Notify(
+                    context.Saga.OrderId,
+                    context.Saga.ClientId,
+                    "Ожидание гостя"))
                 .TransitionTo(AwaitingGuest));
 
         During(AwaitingGuest,
@@ -52,7 +51,5 @@ public class GuestAwaitingSaga : MassTransitStateMachine<GuestAwaitingSagaState>
     public Event<GuestAwaitingRequest> GuestAwaitingRequested { get; set; }
     public Event<ClientBookingCancellation> BookingCancellationRequested { get; set; }
 
-    public Schedule<GuestAwaitingSagaState, IGuestIncome> GuestIncome { get; set; }
+    public Schedule<GuestAwaitingSagaState, GuestIncome> GuestIncome { get; set; }
 }
-
-public record GuestAwaitingRequest(Guid OrderId, Guid ClientId, int IncomeTime, int? TableId);

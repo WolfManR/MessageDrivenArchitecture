@@ -19,7 +19,7 @@ public class BookingRequestSagaTests : IAsyncLifetime
                 x.AddConsumer<DishOrderConsumer>();
                 x.AddConsumer<RestaurantBookingRequestConsumer>();
                 
-                x.AddSagaStateMachine<RestaurantBookingSaga, RestaurantBooking>()
+                x.AddSagaStateMachine<BookingSaga, BookingSagaState>()
                     .InMemoryRepository();
                 x.AddPublishMessageScheduler();
                 x.UsingInMemory((context, cfg) =>
@@ -66,7 +66,7 @@ public class BookingRequestSagaTests : IAsyncLifetime
         Assert.True(await _harness.Published.Any<BookingRequest>());
         Assert.True(await _harness.Consumed.Any<BookingRequest>());
 
-        var sagaHarness = _harness.GetSagaStateMachineHarness<RestaurantBookingSaga, RestaurantBooking>();
+        var sagaHarness = _harness.GetSagaStateMachineHarness<BookingSaga, BookingSagaState>();
 
         Assert.True(await sagaHarness.Consumed.Any<BookingRequest>());
         Assert.True(await sagaHarness.Created.Any(x => x.CorrelationId == orderId));
