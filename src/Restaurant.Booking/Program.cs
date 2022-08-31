@@ -72,7 +72,7 @@ var app = builder.Build();
 
 app.UseSwagger().UseSwaggerUI();
 
-app.MapPost("/Book", static async (int countOfPersons, Dish? dish, [FromServices] Manager manager, [FromServices] IBus messageBus) =>
+app.MapPost("/Book", static async (int countOfPersons, Dish? dish, [FromServices] IBus messageBus) =>
 {
     BookingRequest order = new(
         OrderId: NewId.NextGuid(),
@@ -82,10 +82,15 @@ app.MapPost("/Book", static async (int countOfPersons, Dish? dish, [FromServices
         IncomeTime: Random.Shared.Next(7, 15),
         CountOfPersons: countOfPersons);
     await messageBus.Publish(order);
-    return Results.Ok(order.OrderId);
+    return Results.Ok(new { order.OrderId, order.ClientId});
 });
 
-app.MapPost("/Free/{orderId}", static (Guid orderId, Manager manager) => Results.Problem("Not released feature"));
+app.MapPost("/Free", static async (Guid orderId, Guid clientId, [FromServices] IBus messageBus) =>
+{
+    ClientBookingCancellation cancellation = new(orderId, clientId);
+    await messageBus.Publish(cancellation);
+    return Results.Ok();
+});
 
 app.MapMetrics();
 

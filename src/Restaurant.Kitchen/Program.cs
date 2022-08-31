@@ -1,5 +1,6 @@
 using MassTransit;
 using MassTransit.Audit;
+using Microsoft.AspNetCore.Mvc;
 using Prometheus;
 using Restaurant.Kitchen;
 using Restaurant.Kitchen.Consumers;
@@ -53,7 +54,12 @@ var app = builder.Build();
 
 app.UseSwagger().UseSwaggerUI();
 
-app.MapPost("order", (Dish dish) => Results.Problem("Not released feature"));
+app.MapPost("order", async (Dish dish, [FromServices] IBus messageBus) =>
+{
+    var order = new DishOrder(NewId.NextGuid(), dish);
+    await messageBus.Publish(order);
+    return Results.Ok(order.OrderId);
+});
 
 app.MapMetrics();
 
