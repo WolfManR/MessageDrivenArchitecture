@@ -9,6 +9,9 @@ public class GuestAwaitingSaga : MassTransitStateMachine<GuestAwaitingSagaState>
     {
         InstanceState(x => x.CurrentState);
 
+        Event(() => GuestAwaitingRequested, x => x.CorrelateById(c => c.Message.OrderId));
+        Event(() => BookingCancellationRequested, x => x.CorrelateById(c => c.Message.OrderId));
+
         Schedule(() => GuestIncome, x => x.GuestIncomeId, x => { x.Received = e => e.CorrelateById(c => c.Message.OrderId); });
 
         Initially(
@@ -31,16 +34,15 @@ public class GuestAwaitingSaga : MassTransitStateMachine<GuestAwaitingSagaState>
 
         During(AwaitingGuest,
             When(GuestIncome.Received)
-                .Publish(context =>
-                    (Notify)new Notify(context.Saga.OrderId,
-                        context.Saga.ClientId,
-                        "Гость прибыл"))
+                .Publish(context => new Notify(
+                    context.Saga.OrderId,
+                    context.Saga.ClientId,
+                    "Гость прибыл"))
                 .Finalize());
 
         DuringAny(
             When(BookingCancellationRequested)
-                .Publish(context => (BookingCancellation)
-                    new BookingCancellation(context.Message.OrderId, context.Saga.TableId))
+                .Publish(context => new BookingCancellation(context.Message.OrderId, context.Saga.TableId))
                 .Finalize());
 
         SetCompletedWhenFinalized();
