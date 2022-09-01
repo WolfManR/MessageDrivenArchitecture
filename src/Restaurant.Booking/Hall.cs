@@ -33,4 +33,6 @@ public class Hall
     {
         return _tables.FirstOrDefault(t => t.Id == id);
     }
+
+    public IReadOnlyList<Table> ListTables() => _tables;
 }

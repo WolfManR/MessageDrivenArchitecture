@@ -72,7 +72,7 @@ var app = builder.Build();
 
 app.UseSwagger().UseSwaggerUI();
 
-app.MapPost("/Book", static async (int countOfPersons, Dish? dish, [FromServices] IBus messageBus) =>
+app.MapPost("book", static async (int countOfPersons, Dish? dish, [FromServices] IBus messageBus) =>
 {
     BookingRequest order = new(
         OrderId: NewId.NextGuid(),
@@ -85,12 +85,14 @@ app.MapPost("/Book", static async (int countOfPersons, Dish? dish, [FromServices
     return Results.Ok(new { order.OrderId, order.ClientId});
 });
 
-app.MapPost("/Free", static async (Guid orderId, Guid clientId, [FromServices] IBus messageBus) =>
+app.MapPost("free", static async (Guid orderId, Guid clientId, [FromServices] IBus messageBus) =>
 {
     ClientBookingCancellation cancellation = new(orderId, clientId);
     await messageBus.Publish(cancellation);
     return Results.Ok();
 });
+
+app.MapGet("tables", ([FromServices] Hall hall) => Results.Ok(hall.ListTables()));
 
 app.MapMetrics();
 
