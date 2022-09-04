@@ -1,4 +1,4 @@
-﻿using Restaurant.Messages;
+﻿using Restaurant.Contracts;
 
 namespace Restaurant.Kitchen;
 

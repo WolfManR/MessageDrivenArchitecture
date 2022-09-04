@@ -1,4 +1,5 @@
 ﻿using Restaurant.Booking.Sagas;
+using Restaurant.Contracts;
 using Restaurant.Kitchen;
 using Restaurant.Kitchen.Consumers;
 

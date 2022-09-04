@@ -1,4 +1,5 @@
 ﻿using MassTransit;
+using Restaurant.Contracts;
 using Restaurant.Messages;
 
 namespace Restaurant.Kitchen.Consumers;

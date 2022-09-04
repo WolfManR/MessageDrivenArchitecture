@@ -5,6 +5,7 @@ using Prometheus;
 using Restaurant.Booking;
 using Restaurant.Booking.Consumers;
 using Restaurant.Booking.Sagas;
+using Restaurant.Contracts;
 using Restaurant.MassTransit;
 using Restaurant.Messages;
 
@@ -72,22 +73,22 @@ var app = builder.Build();
 
 app.UseSwagger().UseSwaggerUI();
 
-app.MapPost("book", static async (int countOfPersons, Dish? dish, [FromServices] IBus messageBus) =>
+app.MapPost("book", static async ([FromBody] BookingRequest request, [FromServices] IBus messageBus) =>
 {
-    BookingRequest order = new(
+    BookingOrder order = new(
         OrderId: NewId.NextGuid(),
-        ClientId: NewId.NextSequentialGuid(),
-        PreOrder: dish,
+        ClientId: request.ClientId,
+        PreOrder: request.DishPreOrder,
         CreationDate: DateTime.UtcNow,
-        IncomeTime: Random.Shared.Next(7, 15),
-        CountOfPersons: countOfPersons);
+        IncomeTime: request.IncomeTime,
+        CountOfPersons: request.CountOfPersons);
     await messageBus.Publish(order);
-    return Results.Ok(new { order.OrderId, order.ClientId});
+    return Results.Ok(new {order.OrderId});
 });
 
-app.MapPost("free", static async (Guid orderId, Guid clientId, [FromServices] IBus messageBus) =>
+app.MapPost("free", static async ([FromBody] CancelBookingRequest request, [FromServices] IBus messageBus) =>
 {
-    ClientBookingCancellation cancellation = new(orderId, clientId);
+    ClientBookingCancellation cancellation = new(request.OrderId, request.ClientId);
     await messageBus.Publish(cancellation);
     return Results.Ok();
 });
@@ -97,3 +98,4 @@ app.MapGet("tables", ([FromServices] Hall hall) => Results.Ok(hall.ListTables())
 app.MapMetrics();
 
 app.Run();
+

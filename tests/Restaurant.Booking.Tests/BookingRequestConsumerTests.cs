@@ -1,3 +1,5 @@
+using Restaurant.Contracts;
+
 namespace Restaurant.Booking.Tests;
 
 public class BookingRequestConsumerTests : IAsyncLifetime

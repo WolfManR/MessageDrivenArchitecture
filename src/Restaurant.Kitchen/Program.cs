@@ -2,6 +2,7 @@ using MassTransit;
 using MassTransit.Audit;
 using Microsoft.AspNetCore.Mvc;
 using Prometheus;
+using Restaurant.Contracts;
 using Restaurant.Kitchen;
 using Restaurant.Kitchen.Consumers;
 using Restaurant.MassTransit;

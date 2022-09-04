@@ -1,4 +1,4 @@
-﻿namespace Restaurant.Messages;
+﻿namespace Restaurant.Contracts;
 
 public enum Dish
 {
