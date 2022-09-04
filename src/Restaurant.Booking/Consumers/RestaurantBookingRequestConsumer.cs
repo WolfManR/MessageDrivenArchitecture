@@ -3,7 +3,7 @@ using Restaurant.Messages;
 
 namespace Restaurant.Booking.Consumers;
 
-public class RestaurantBookingRequestConsumer: IConsumer<BookingRequest>
+public class RestaurantBookingRequestConsumer: IConsumer<BookingOrder>
 {
     private readonly Manager _manager;
     private readonly ILogger<RestaurantBookingRequestConsumer> _logger;
@@ -16,7 +16,7 @@ public class RestaurantBookingRequestConsumer: IConsumer<BookingRequest>
         _logger = logger;
     }
 
-    public async Task Consume(ConsumeContext<BookingRequest> context)
+    public async Task Consume(ConsumeContext<BookingOrder> context)
     {
         var orderId = context.Message.OrderId;
 

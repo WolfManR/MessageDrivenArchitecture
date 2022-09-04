@@ -14,7 +14,7 @@ public class BookingRequestConsumerTests : IAsyncLifetime
             .AddLogging()
             .AddTransient<Hall>()
             .AddTransient<Manager>()
-            .AddSingleton<IRepository<BookingRequest>, InMemoryRepository<BookingRequest>>()
+            .AddSingleton<IRepository<BookingOrder>, InMemoryRepository<BookingOrder>>()
             .BuildServiceProvider(true);
 
         _harness = _provider.GetTestHarness();
@@ -36,7 +36,7 @@ public class BookingRequestConsumerTests : IAsyncLifetime
     {
         var orderId = Guid.NewGuid();
 
-        await _harness.Bus.Publish(new BookingRequest(
+        await _harness.Bus.Publish(new BookingOrder(
                 orderId,
                 Guid.NewGuid(),
                 Dish.Pasta,
@@ -44,7 +44,7 @@ public class BookingRequestConsumerTests : IAsyncLifetime
                 3,
                 1));
 
-        Assert.True(await _harness.Consumed.Any<BookingRequest>());
+        Assert.True(await _harness.Consumed.Any<BookingOrder>());
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class BookingRequestConsumerTests : IAsyncLifetime
         var orderId = NewId.NextGuid();
         var bus = _harness.Bus;
 
-        await bus.Publish(new BookingRequest(
+        await bus.Publish(new BookingOrder(
                 orderId,
                 Guid.NewGuid(),
                 Dish.Pasta,
@@ -63,7 +63,7 @@ public class BookingRequestConsumerTests : IAsyncLifetime
                 3,
                 1));
 
-        Assert.Contains(consumer.Consumed.Select<BookingRequest>(), x => x.Context.Message.OrderId == orderId);
+        Assert.Contains(consumer.Consumed.Select<BookingOrder>(), x => x.Context.Message.OrderId == orderId);
 
         Assert.Contains(_harness.Published.Select<TableBooked>(), x => x.Context.Message.OrderId == orderId);
     }

@@ -99,11 +99,11 @@ public sealed class BookingSaga : MassTransitStateMachine<BookingSagaState>
     public State AwaitingBookingApproved { get; private set; }
     public Event BookingApproved { get; private set; }
 
-    public Event<BookingRequest> BookingRequested { get; private set; }
+    public Event<BookingOrder> BookingRequested { get; private set; }
     public Event<TableBooked> TableBooked { get; private set; }
     public Event<DishOrderApproved> DishOrderApproved { get; private set; }
 
-    public Event<Fault<BookingRequest>> BookingRequestFault { get; private set; }
+    public Event<Fault<BookingOrder>> BookingRequestFault { get; private set; }
     public Event<ClientBookingCancellation> BookingCancellationRequested { get; set; }
 
     public Schedule<BookingSagaState, BookingExpire> BookingExpired { get; private set; }

@@ -55,7 +55,7 @@ public class BookingRequestSagaTests : IAsyncLifetime
         var orderId = NewId.NextGuid();
         var clientId = NewId.NextGuid();
         
-        await _harness.Bus.Publish(new BookingRequest(
+        await _harness.Bus.Publish(new BookingOrder(
             orderId,
             clientId,
             Dish.Pasta,
@@ -63,12 +63,12 @@ public class BookingRequestSagaTests : IAsyncLifetime
             3,
             1));
         
-        Assert.True(await _harness.Published.Any<BookingRequest>());
-        Assert.True(await _harness.Consumed.Any<BookingRequest>());
+        Assert.True(await _harness.Published.Any<BookingOrder>());
+        Assert.True(await _harness.Consumed.Any<BookingOrder>());
 
         var sagaHarness = _harness.GetSagaStateMachineHarness<BookingSaga, BookingSagaState>();
 
-        Assert.True(await sagaHarness.Consumed.Any<BookingRequest>());
+        Assert.True(await sagaHarness.Consumed.Any<BookingOrder>());
         Assert.True(await sagaHarness.Created.Any(x => x.CorrelationId == orderId));
 
         var saga = sagaHarness.Created.Contains(orderId);
