@@ -1,4 +1,6 @@
-﻿namespace Restaurant.Kitchen.Tests;
+﻿using Restaurant.Contracts;
+
+namespace Restaurant.Kitchen.Tests;
 
 public class DishOrderConsumerTests : IAsyncLifetime
 {
@@ -35,9 +37,9 @@ public class DishOrderConsumerTests : IAsyncLifetime
     {
         var orderId = Guid.NewGuid();
 
-        await _harness.Bus.Publish((IDishOrder)new DishOrder(orderId, Dish.Pasta));
+        await _harness.Bus.Publish(new DishOrder(orderId, Dish.Pasta));
 
-        Assert.True(await _harness.Consumed.Any<IDishOrder>());
+        Assert.True(await _harness.Consumed.Any<DishOrder>());
     }
     
     [Fact]
@@ -45,10 +47,10 @@ public class DishOrderConsumerTests : IAsyncLifetime
     {
         var orderId = NewId.NextGuid();
         
-        await _harness.Bus.Publish((IDishOrder)new DishOrder(orderId, Dish.Pasta));
+        await _harness.Bus.Publish(new DishOrder(orderId, Dish.Pasta));
 
-        Assert.Contains(_harness.Consumed.Select<IDishOrder>(), x => x.Context.Message.OrderId == orderId);
+        Assert.Contains(_harness.Consumed.Select<DishOrder>(), x => x.Context.Message.OrderId == orderId);
 
-        Assert.Contains(_harness.Published.Select<IDishReady>(), x => x.Context.Message.OrderId == orderId);
+        Assert.Contains(_harness.Published.Select<DishReady>(), x => x.Context.Message.OrderId == orderId);
     }
 }
