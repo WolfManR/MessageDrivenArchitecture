@@ -1,13 +1,10 @@
-using MassTransit;
 using MassTransit.Audit;
 using Microsoft.AspNetCore.Mvc;
 using Prometheus;
 using Restaurant.Booking;
 using Restaurant.Booking.Consumers;
 using Restaurant.Booking.Sagas;
-using Restaurant.Contracts;
 using Restaurant.MassTransit;
-using Restaurant.Messages;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,7 +61,7 @@ builder.Services.AddMassTransit(x =>
 
         cfg.ConnectSendAuditObservers(auditStore);
         cfg.ConnectConsumeAuditObserver(auditStore);
-        
+
         cfg.UsePrometheusMetrics(serviceName: "restaurant_booking");
     });
 });
@@ -83,7 +80,7 @@ app.MapPost("book", static async ([FromBody] BookingRequest request, [FromServic
         IncomeTime: request.IncomeTime,
         CountOfPersons: request.CountOfPersons);
     await messageBus.Publish(order);
-    return Results.Ok(new {order.OrderId});
+    return Results.Ok(new BookingResponse(order.OrderId));
 });
 
 app.MapPost("free", static async ([FromBody] CancelBookingRequest request, [FromServices] IBus messageBus) =>
@@ -93,9 +90,11 @@ app.MapPost("free", static async ([FromBody] CancelBookingRequest request, [From
     return Results.Ok();
 });
 
-app.MapGet("tables", ([FromServices] Hall hall) => Results.Ok(hall.ListTables()));
+app.MapGet("tables", ([FromServices] Hall hall) =>
+{
+    return Results.Ok(hall.ListTables().Select(t => new TableResponse(t.State, t.Id, t.SeatsCount)));
+});
 
 app.MapMetrics();
 
 app.Run();
-
