@@ -1,6 +1,4 @@
-﻿using MassTransit;
-
-namespace Restaurant.Booking.Sagas;
+﻿namespace Restaurant.Booking.Sagas;
 
 public class GuestAwaitingSagaState : SagaStateMachineInstance
 {

@@ -1,4 +1,4 @@
-﻿namespace Restaurant.Booking;
+﻿namespace Restaurant.Contracts;
 
 public enum TableState
 {

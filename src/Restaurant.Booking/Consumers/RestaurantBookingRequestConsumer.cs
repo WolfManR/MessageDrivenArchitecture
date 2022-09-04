@@ -1,7 +1,4 @@
-﻿using MassTransit;
-using Restaurant.Messages;
-
-namespace Restaurant.Booking.Consumers;
+﻿namespace Restaurant.Booking.Consumers;
 
 public class RestaurantBookingRequestConsumer: IConsumer<BookingOrder>
 {

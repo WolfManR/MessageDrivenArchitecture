@@ -1,7 +1,4 @@
-﻿using MassTransit;
-using Restaurant.Messages;
-
-namespace Restaurant.Booking.Sagas;
+﻿namespace Restaurant.Booking.Sagas;
 
 public sealed class BookingSaga : MassTransitStateMachine<BookingSagaState>
 {
