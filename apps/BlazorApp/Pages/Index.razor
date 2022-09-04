@@ -1,5 +1,36 @@
 ﻿@page "/"
+@inject IBookingClient BookingClient
 
 <PageTitle>Index</PageTitle>
+@if (_tables is not null)
+{
+    
+    <div style="display: flex;flex-wrap: wrap;">
+        @foreach (var table in _tables)
+        {
+            <div style="display: flex; flex-direction: column;">
+                <label>TableId</label>
+                <div>@table.Id</div>
+                <label>State</label>
+                <div>@table.State</div>
+                <label>Seats</label>
+                <div>@table.SeatsCount</div>
+            </div>
+        }
+    </div>
+}
 
-<h1>Hello, world!</h1>
+@code
+{
+    private List<TableResponse>? _tables;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var response = await BookingClient.Tables();
+            _tables = response.ToList();
+            StateHasChanged();
+        }
+    }
+}
