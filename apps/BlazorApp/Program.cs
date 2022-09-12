@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using BlazorApp;
+using BlazorApp.Models;
 using Refit;
 using Restaurant.Contracts;
 
@@ -9,7 +10,8 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-builder.Services.AddRefitClient<IBookingClient>()
-    .ConfigureHttpClient(c => c.BaseAddress = new Uri("http://localhost:5161"));
+builder.Services.AddSingleton<IBookingClient, BookingClientMock>();
+//builder.Services.AddRefitClient<IBookingClient>()
+//    .ConfigureHttpClient(c => c.BaseAddress = new Uri("http://localhost:5161"));
 
 await builder.Build().RunAsync();

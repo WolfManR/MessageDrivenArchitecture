@@ -1,36 +1,107 @@
 ﻿@page "/"
+
 @inject IBookingClient BookingClient
 
 <PageTitle>Index</PageTitle>
 @if (_tables is not null)
 {
-    
-    <div style="display: flex;flex-wrap: wrap;">
-        @foreach (var table in _tables)
-        {
-            <div style="display: flex; flex-direction: column;">
-                <label>TableId</label>
-                <div>@table.Id</div>
-                <label>State</label>
-                <div>@table.State</div>
-                <label>Seats</label>
-                <div>@table.SeatsCount</div>
-            </div>
-        }
-    </div>
+
+	<div style="display: flex;flex-wrap: wrap;">
+		@foreach (var table in _tables)
+		{
+			<div style="display: flex; flex-direction: column;">
+				<label>TableId</label>
+				<div>@table.Id</div>
+				<label>State</label>
+				<div>@table.State</div>
+				<label>Seats</label>
+				<div>@table.SeatsCount</div>
+			</div>
+		}
+	</div>
 }
+
+<div>
+	<EditForm Model="@BookingModel" OnValidSubmit="Book">
+		<div>
+			<label>Count Of Persons</label>
+			<InputNumber @bind-Value="BookingModel.CountOfPersons" DisplayName="Count" />
+		</div>
+		<div>
+			<label>Dish pre-order</label>
+			<InputSelect @bind-Value="BookingModel.DishPreOrder">
+				<option value="@Dish.Chicken">Chicken</option>
+				<option value="@Dish.Lasagna">Lasagna</option>
+				<option value="@Dish.Pasta">Pasta</option>
+				<option value="@Dish.Pizza">Pizza</option>
+			</InputSelect>
+		</div>
+		<div>
+			<label>Income Time</label>
+			<InputNumber @bind-Value="BookingModel.IncomeTime" />
+		</div>
+		<button>Confirm</button>
+	</EditForm>
+</div>
+
+<div>
+	<table>
+		<thead>
+			<tr>
+				<td>Order</td>
+				<td>Client</td>
+				<td>Dish</td>
+				<td>Error</td>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var order in Orders)
+			{
+				<tr>
+					<td>@order.OrderId</td>
+					<td>@order.ClientId</td>
+					<td>@order.Dish</td>
+					<td>@order.Error</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
 
 @code
 {
-    private List<TableResponse>? _tables;
-    
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            var response = await BookingClient.Tables();
-            _tables = response.ToList();
-            StateHasChanged();
-        }
-    }
+	private List<TableResponse>? _tables;
+	private Guid ClientId { get; } = Guid.NewGuid();
+	private BookingRequestVM BookingModel { get; } = new();
+	private List<OrderVM> Orders { get; } = new();
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			var response = await BookingClient.Tables();
+			_tables = response.ToList();
+			StateHasChanged();
+		}
+	}
+
+	private async Task Book()
+	{
+		BookingRequest request = new(BookingModel.CountOfPersons, BookingModel.DishPreOrder, ClientId, BookingModel.IncomeTime);
+		try
+		{
+			var response = await BookingClient.Book(request);
+		}
+		catch (Exception e)
+		{
+			
+		}
+		
+		StateHasChanged();
+	}
+
+	private void Free()
+	{
+
+	}
 }
